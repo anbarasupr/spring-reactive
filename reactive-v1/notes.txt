@@ -1,0 +1,109 @@
+Flux.just("default")
+Mono.just("alexchloe")
+Flux.fromIterable(List.of("alex", "ben", "chloe"))
+map
+filter
+doOnNext,doOnSubscribe,doOnComplete,doFinally
+
+flatMap
+concatMap
+flatMapMany
+delayElement
+transform
+defaultIfEmpty
+switchIfEmpty
+concat & concatWith
+merge() and mergeWith()
+mergeSequential
+zip() and zipWith()
+
+/*
+ * Map:
+ * 	One to One Transformation
+ *  Does the simple transformation from T to V
+ *  Used for simple synchronous transformation
+ *  Does not support transformations that returns Publisher
+ *  
+ * FlatMap:
+ *  One to N Transformations
+ *  Does more than just transformation. Subscribes tp Flux or Mono that is part of the transformation and then flattens it and sends to downstreams
+ *  used for asynchronous transformations
+ *  
+ * */
+
+
+/*
+ * Flatmap: 
+ * 	Async in nature
+ *  Ordering does not maintain and it is fast
+ *  
+ * ConcatMap:
+ *  Sync in nature
+ *  Ordering maintains and it takes time to complete due to ordering maintaining
+ * */
+ 
+ 
+/*
+ * flatMapMany() in Mono
+ *  Works similiar to flatMap
+ *  Useful in Mono transformation logic returns a flux. Used to transform a Mono object into a Flux object. 
+ *  DelayElements - It delays the publishing of each element by a defined duration
+ * */
+
+ 
+ /*
+ * concat() and concatWith()
+ * 	Used to combine two reactive streams into one
+ * 	Concatenation of reactice streams happens in a sequence
+ * 		First one is subscribed first and completes
+ * 		Second one subscribed after that and then completes
+ * 
+ * 	concat() is a static method in Flux
+ * 	concatWith() is a instance method in Flux and Mono
+ *  Both are similiar
+ * 
+ * */
+ 
+ 
+/*
+ * merge() and mergeWith()
+ * 	Both the publishers are subscribed at the same time
+ * 		Publishers are subscribed eagerly and the merge happens in interleaved fashion
+ * 
+ * 	concat() subscribes to the publishers in a sequence
+ * 	
+ * 
+ * 	merge() is a static method in Flux
+ * 	mergeWith() is a instance method in Flux and Mono
+ *  Both are similiar
+ * */
+ 
+ 
+/*
+ * mergeSequential()
+ * 	Used to combine two publishers(Flux) into one
+ *  Static method flux
+ *  Both the publishers are subscribed at the same time
+ *  	Publishers are subscribed eagerly
+ *  	Eventhough the publishers are subscribed eagerly the merge happens in a sequence     *  
+ * */
+ 
+ 
+/*
+ * Combining multiple publishers using Zip and Zipwith
+ * 
+ * zip() and zipWith()
+ * 
+ * zip()
+ * 	Static method in Flux
+ * 	Can be used to merge upto 2 to 8 publushers (Flux or Mono) in to one
+ * 
+ * zipWith()
+ * 	It is an instance method in both Flux and Mono
+ * 	Used to merge two publishers into one
+ * 
+ * Publishers are subscribed eagerly
+ * Waits for all the publishers involved in the transformation to emit one element
+ * 		Continues until one publisher sends an onComplete event
+ * 	
+ * */
