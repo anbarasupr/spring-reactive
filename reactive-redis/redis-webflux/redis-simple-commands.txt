@@ -1,0 +1,113 @@
+										Redis Simple Commands:
+										----------------------
+set: set key value pair
+---------------------------
+
+set key value
+set user:1:name anbu	 -- key format - user:userId:name
+get key
+
+keys:
+-----
+keys *	- list all keys without pagination
+
+keys name* - list all keys start witn name
+
+
+scan:
+----
+scan 0 - list first 10 keys with pagination and performance wise good  an keys command
+
+scan 0 MATCH user*
+scan 6 MATCH user*
+scan 3 MATCH user* count 3 - list keys starts with user and the count is 3 from the start of 0th index
+
+
+type:
+------
+type math:fib  -- return data type
+
+
+delete:
+------- 
+del user:8:name  -- gives of keys affected
+del user:8:name user:100:anbu 
+
+
+flush:
+------
+flushdb		-- remove all
+
+
+expiry keys with seconds:
+-----------------------
+set a b ex 10   -- key a get expired after 10 seconds
+
+
+time to live:
+------------
+ttt key  -- to find the time to live seconds of a key
+
+
+extend the time of akey expiry:
+------------------------------------
+expire key 60  -- extend the expiry of a key to 60 seconds 
+
+
+expiry keys timestamp:
+------------------------
+set a b exat [enter the timestamp]
+
+
+expire keys with milliseconds:
+------------------------------------
+set a b px 3000
+
+
+replace value of a existing key with expired set:
+------------------------------------------------------------
+set a b ex 10
+
+set a c			-- this will remove the expire set for key a
+
+set a c keepttl	-- this will keep the expiry of the key after replacing
+
+
+
+update on if present (XX) or not present (NX):
+------------------------------------------------
+set a b xx -- if b present with key a, then set the same
+
+set a b nx -- if b is not present with key a, then set
+
+
+exists: to check the key exist or not:
+------------------------------------
+set user:1:session token ex 10
+exists user:1:session
+
+
+increment /decrement:
+------------------------
+set prod:c:visit 1
+
+incr prod:c:visit 		-- increment by 1  (redis stores all key values in string. based on the operation, it will check whether it can incremented then do it else throw error)
+
+decr prod:c:visit
+
+incrby prod:c:visit 10	-- increment by 10
+decrby prod:c:visit 10
+
+
+incrbyfloat : to increment floating nos:
+------------------------------------------------
+set a 10.3
+
+incrbyfloat a .3
+incrbyfloat a -.3
+
+
+link for all comands:
+----------------------------------
+https://cheatography.com/tasjaevan/cheat-sheets/redis/
+https://redis.io/commands/
