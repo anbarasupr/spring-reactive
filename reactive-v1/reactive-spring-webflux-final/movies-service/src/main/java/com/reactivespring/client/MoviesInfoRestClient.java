@@ -42,10 +42,14 @@ public class MoviesInfoRestClient {
                 .onStatus(HttpStatus::is4xxClientError, (clientResponse -> {
                     log.info("Status code : {}", clientResponse.statusCode().value());
                     if (clientResponse.statusCode().equals(HttpStatus.NOT_FOUND)) {
+                    	System.out.println("movieinfo client response: "+clientResponse+", status:"+clientResponse.statusCode().value());
                         return Mono.error(new MoviesInfoClientException("There is no MovieInfo available for the passed in Id : " + movieId, clientResponse.statusCode().value()));
                     }
                     return clientResponse.bodyToMono(String.class)
-                            .flatMap(response -> Mono.error(new MoviesInfoClientException(response, clientResponse.statusCode().value())));
+                            .flatMap(response -> {
+                            	System.out.println("movieinfo client response: "+response+", status:"+clientResponse.statusCode().value());
+                            	return Mono.error(new MoviesInfoClientException(response, clientResponse.statusCode().value()));
+                            });
                 }))
                 .onStatus(HttpStatus::is5xxServerError, (clientResponse -> {
                     log.info("Status code : {}", clientResponse.statusCode().value());

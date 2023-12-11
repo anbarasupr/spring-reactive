@@ -20,7 +20,7 @@ public class ReviewValidator implements Validator {
         ValidationUtils.rejectIfEmpty(errors,"movieInfoId", "movieInfoId.null", "Pass a valid movieInfoId" );
         ValidationUtils.rejectIfEmpty(errors,"rating", "rating.null", "Pass a valid rating" );
         Review review = (Review) target;
-        log.info("Review : {}" , review);
+        log.info("Review Validator: {}" , review);
         if(review.getRating()!=null && review.getRating()<0.0){
             errors.rejectValue("rating", "rating.negative", "rating is negative and please pass a non-negative value");
         }

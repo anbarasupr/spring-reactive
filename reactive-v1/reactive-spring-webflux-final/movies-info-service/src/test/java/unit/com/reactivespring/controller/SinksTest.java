@@ -12,6 +12,16 @@ public class SinksTest {
         throw new RuntimeException("Exception Occurred");
     }
 
+ // replay all - transmit all data to its subscribers
+
+ // replay latest  - transmit only newly published data to its subscribers - the new subscribers will receive only new data that is published after the subscription 
+ // and old subscribers receive all data
+
+ // multicast will transmit only newly published data to its subscribers honoring their backpressure
+ 	  
+ // unicast - data pushed before the first subscriber registers is buffered
+    
+    
     @Test
     void sink() {
         //given
@@ -85,13 +95,18 @@ public class SinksTest {
         //given
 
         //when
-
+    	//multicast will transmit only newly published data to its subscribers honoring their backpressure
         Sinks.Many<Integer> multiCast = Sinks.many().multicast().onBackpressureBuffer();
 
-        IntStream.rangeClosed(0,200)
+        IntStream.rangeClosed(0,3)
                 .forEach(multiCast::tryEmitNext);
 
-
+        Flux<Integer> integerFlux0 = multiCast.asFlux();
+        integerFlux0
+                .subscribe(s->{
+                    System.out.println("Subscriber 0 : " + s);
+                });
+        
         multiCast.tryEmitNext(301);
         multiCast.tryEmitNext(302);
 
@@ -120,7 +135,7 @@ public class SinksTest {
         //given
 
         //when
-
+    	// unicast - data pushed before the first subscriber registers is buffered
         Sinks.Many<Integer> multiCast = Sinks.many().unicast().onBackpressureBuffer();
 
         IntStream.rangeClosed(0,200)
@@ -152,3 +167,5 @@ public class SinksTest {
 
 
 }
+
+

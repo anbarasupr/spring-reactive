@@ -13,6 +13,7 @@ import reactor.core.publisher.ConnectableFlux;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
+import reactor.core.publisher.Sinks.EmitResult;
 
 import javax.annotation.PostConstruct;
 import javax.print.attribute.standard.Media;
@@ -50,7 +51,16 @@ public class MoviesInfoController {
     @GetMapping(value = "/movieinfos/stream", produces = MediaType.APPLICATION_NDJSON_VALUE)
     public Flux<MovieInfo> streamMovieInfos() {
 
-        return movieInfoSink.asFlux();
+    	Flux<MovieInfo> movieFlux = movieInfoSink.asFlux();    			
+    	movieFlux.doOnNext(item->{
+        	System.out.println("movieInfoSink doOnNext emitted item is :"+item);
+        }).subscribe(item->{
+        	System.out.println("movieInfoSink subscribe emitted item is :"+item);
+        });
+    	
+        return movieInfoSink.asFlux().doOnNext(item->{
+        	System.out.println("movieInfoSink emitted item is :"+item);
+        });
     }
 
     @GetMapping("/movieinfos/{id}")
@@ -67,7 +77,11 @@ public class MoviesInfoController {
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<MovieInfo> addMovieInfo(@RequestBody @Valid MovieInfo movieInfo) {
         return moviesInfoService.addMovieInfo(movieInfo)
-                .doOnNext(savedMovieInfo -> movieInfoSink.tryEmitNext(savedMovieInfo));
+                .doOnNext(savedMovieInfo -> { 
+                		EmitResult result = movieInfoSink.tryEmitNext(savedMovieInfo);
+                		System.out.println("Emit Failure: "+result.isFailure());
+                		System.out.println("Emit Success: "+result.isSuccess());
+            	 });
 
     }
 

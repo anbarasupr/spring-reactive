@@ -1,6 +1,7 @@
 Flux.just("default")
 Mono.just("alexchloe")
 Flux.fromIterable(List.of("alex", "ben", "chloe"))
+block
 map
 filter
 doOnNext,doOnSubscribe,doOnComplete,doFinally
@@ -36,6 +37,8 @@ zip() and zipWith()
  * Flatmap: 
  * 	Async in nature
  *  Ordering does not maintain and it is fast
+ *  Transform the elements emitted by this Flux asynchronously into Publishers,
+	then flatten these inner publishers into a single Flux through merging, which allow them to interleave. 
  *  
  * ConcatMap:
  *  Sync in nature
@@ -107,3 +110,26 @@ zip() and zipWith()
  * 		Continues until one publisher sends an onComplete event
  * 	
  * */
+ 
+ 
+ SSE using Webflux : Sinks
+ ---------------------------
+ The client makes a call requesting data from a api.
+ 
+ Once the call is made, the data is sent in the form of events which is a form of non blocking stream of events.
+ The data is sent to the client whenever it is available
+ The data flow is unidirectional and client cannot interact to server.
+ Long live client connections
+ 
+ Ex: Uber app. Once you book the ride, the driver location is continously updated.
+	  Dominos etc;
+	  
+	  
+//replay all - transmit all data to its subscribers
+
+// replay latest  - transmit only newly published data to its subscribers - the new subscribers will receive only new data that is published after the subscription 
+and old subscribers receive all data
+
+//multicast will transmit only newly published data to its subscribers honoring their backpressure
+	  
+// unicast - data pushed before the first subscriber registers is buffered
