@@ -1,0 +1,94 @@
+Backpressure and Overflow Strategy
+
+	When publisher is producing data in a fast manner, but consumer is slow in consuming, there is a back pressure on the publisher how to keep the produced items.
+ 	In order to handle this, there are some Overflow Strategy given by reactor.
+
+	Consider consumer processing one item for 10 ms, meanwhile publisher produced all 500 items which is retained in the memory
+    until subscriber started consuming which is not good if the objects are huge. How do we handle those objects using Overflow Strategy. 
+	
+	
+	
+
+Overflow Strategy
+-----------------------------------------------
+
+Strategy and its  Behaviour:
+	buffer		->		Keep in memory
+	drop		->		Once the queue is full, new items willbe dropped
+	latest		->		Once the queue is full, keep 1 latest item as and when it arrives. drop old
+	error		->		throw error to the downstream
+	
+	
+buffer:
+-----------------------------------------------
+By default, buffer isthe back pressure startegy which is holding all the emiited items int he memory
+
+
+drop:
+-----------------------------------------------	
+onBackpressureDrop: Flux<Object> reactor.core.publisher.Flux.onBackpressureDrop()
+	Request an unbounded demand and push to the returned Flux, or dropthe observed elements if not enough demand is requested downstream. 
+
+ 	Default size of queue is 256 given in Queue interface which means the queue can keep 256 items
+	Once the queue is full, new items will be dropped
+	
+	System.setProperty("reactor.bufferSize.small", "16"); / to change default size
+	EX: The queue hold 16 items,  Once the queue is full, new items will be dropped
+	Whever the subscriber is consuming, the data in the queue gets drained
+	75% of 16 items is 12. When 75% items(12) in the queue is drained, the queue will accept another 12 items, Once the queue is full, again new items will be dropped
+		
+	
+onBackpressureDrop with Callback : Flux<Object> reactor.core.publisher.Flux.onBackpressureDrop(Consumer<? super Object> onDropped)
+	Request an unbounded demand and push to the returned Flux, or drop andnotify dropping Consumer with the observed elements if not enough demandis requested downstream. 
+ 	Discard Support: This operator discards elements that it drops after having passed them to the provided onDropped handler.
+
+
+latest:
+-----------------------------------------------
+onBackpressureLatest: Flux<Object> reactor.core.publisher.Flux.onBackpressureLatest()
+	Request an unbounded demand and push to the returned Flux, or only keep the most recent observed item if not enough demand is requested downstream. 
+
+	Discard Support: Each time a new element comes in (the new "latest"), this operator discards the previously retained element.
+
+	System.setProperty("reactor.bufferSize.small", "16"); / to change default size
+	EX: The queue hold 16 items,  Once the queue is full, new items will be dropped
+	Whever the subscriber is consuming, the data in the queue gets drained
+	75% of 16 items is 12. When 75% items(12) in the queue is drained, the queue will accept latest 12 items which are emitted after 75% of data drained, 
+	Once the queue is full, again new items will be dropped
+	
+	
+error:
+-----------------------------------------------
+onBackpressureError:	Flux<Object> reactor.core.publisher.Flux.onBackpressureError()
+	Request an unbounded demand and push to the returned Flux, or emit onErrorfom Exceptions.failWithOverflow if not enough demand is requested downstream. 
+	
+	Discard Support: This operator discards elements that it drops, after having propagated the error.
+	
+	It used default queue buffer size to hold the data
+	
+	if not enough demand is requested from downstream, below error will get thrown to signal the error
+	ERROR : The receiver is overrun by more signals than expected (bounded queue...)
+
+
+
+onBackpressureBuffer:	Flux<Object> reactor.core.publisher.Flux.onBackpressureBuffer(int maxSize, Consumer<? super Object> onOverflow)
+	Request an unbounded demand and push to the returned Flux, or park up to maxSize elements when not enough demand is requested downstream.
+	The first element past this buffer to arrive out of sync with the downstreamsubscriber's demand (the "overflowing" element) 
+	is immediately passed to a Consumer and the source is cancelled.The Flux is going to terminate with an overflow error, 
+	but this error is delayed, which lets the subscriber make more requests for the content of the buffer. 
+	
+	additionaly we can set the buffer size to hold the data
+
+	if not enough demand is requested from downstream, below error will get thrown to signal the error
+	ERROR : The receiver is overrun by more signals than expected (bounded queue...)
+	
+	
+Summary:
+-------------
+	Backpressure is a mechanism to signal a producer in some way to indicate that its rate of producing elements is too high to handle for the consumer.
+	In that case, what kind of startegy can be followed and below are them.
+
+	buffer		->		Keep everything in memory
+	drop		->		Once the queue is full, new items willbe dropped
+	latest		->		Once the queue is full, keep 1 latest item as and when it arrives. drop old
+	error		->		throw error to the downstream

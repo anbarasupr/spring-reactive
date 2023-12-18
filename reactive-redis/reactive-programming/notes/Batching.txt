@@ -1,0 +1,64 @@
+Batching
+	buffer
+	window
+	group
+
+
+buffer
+----------------------------------------
+Buffer:	Flux<List<String>> reactor.core.publisher.Flux.buffer(int maxSize)
+	Collect all the items and add to the list, then emit as a batch of items instead of individual items
+	
+	Collect incoming values into multiple List buffers that will be emitted by the returned Flux each time the given max size is reached or once this Flux completes. 
+
+	buffer(5) 	->	collect 5 items and give back
+	buffer(Duration.ofSeconds(2)) ->	 collect the items for the 2 seconds window time and give back
+	bufferTimeout(5, Duration.ofSeconds(2)) ->	 Either collect 5 items or whatever the items that it got in the window time and give back. 
+												 whichever finish first, it will take precedence either window time or no of items mentioned
+												 
+	buffer(int maxSize, int skip) 
+	buffer(3, 3)  equalTo buffer(3) 	-> Collect 3 items and skip 3 in next trip
+	buffer(3, 1)  equalTo buffer(3) 	-> Collect 3 items and skip 1 in next trip
+	Received : [event0, event1, event2]	   Collect 3 items and skip 1 which is event0
+	Received : [event1, event2, event3]
+	Received : [event2, event3, event4]
+	
+	 
+	buffer(3, 5)  						 -> Collect 3 items and skip 5 in next trip
+	Received : [event0, event1, event2]		Collect 3, Skip 0 to 4 which 5 items
+	Received : [event5, event6, event7]
+	Received : [event10, event11, event12]
+	
+	
+	
+window	
+----------------------------------------
+window(Duration.ofSeconds(2)):	Flux<Flux<String>> reactor.core.publisher.Flux.window(Duration windowingTimespan)
+	As and when something comes, it is given to next pipeline until window time instead of collecting in a list and giving after like buffer	
+	
+	It opens a 2sec window, create a flux and publish the incoming elements when it arrives and close the flux once window closed
+	
+	Split this Flux sequence into continuous, non-overlapping windows that openfor a windowingTimespan Duration (as measured on the parallelScheduler). 
+	
+		
+window(3): Flux<Flux<String>> reactor.core.publisher.Flux.window(int maxSize)
+	Split this Flux sequence into multiple Flux windows containing maxSize elements 
+	(or less for the final window) and starting from the first item. Each Flux window will onComplete after maxSize items have been routed. 
+	
+group
+----------------------------------------
+	group the items by some property.
+	Ex; group the balls based on color and each color balls are published as a Flux 
+
+.groupBy(i -> i % 2) 	// key 0, 1 based on whatever it returns, it is considered as a key to group
+
+
+
+
+
+
+then(): <Integer> Mono<Integer> reactor.core.publisher.Flux.then(Mono<Integer> other)
+	Let this Flux complete then play signals from a provided Mono. 
+
+	In other words ignore element from this Flux and transform its completion signal into theemission and completion signal of a provided Mono<V>. 
+	Error signal isreplayed in the resulting Mono<V>. 

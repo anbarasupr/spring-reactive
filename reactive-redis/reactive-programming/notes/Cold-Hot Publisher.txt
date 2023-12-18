@@ -1,0 +1,101 @@
+Cold Publisher:
+-----------------------------------------------------------------------------------------------
+	Netflix - any one can watch the shows at any time we want and it will be played to subscribers all the time whenever they want.
+
+	By default, the publishers all are cold publishers.
+	
+Hot Subscriber :
+-----------------------------------------------------------------------------------------------
+	TV Channel play a Favorite Show at Specific time: If we miss that time or late, it cannot be replayed to them and late subscribers will miss the data
+	
+	Most of the time, it is not required any subscribers and it will not start emitting data. 
+
+	
+	
+														Below are Hot Subscribers
+					-----------------------------------------------------------------------------------------------
+														
+share :	Flux<String> reactor.core.publisher.Flux.share()
+-----------------------------------------------------------------------------------------------
+
+	Returns a new Flux that multicasts (shares) the original Flux. 
+	As long as there is at least one Subscriber this Flux will be subscribed and emitting data.
+	When all subscribers have cancelled it will cancel the source Flux. 
+
+	This is an alias for publish().ConnectableFlux.refCount().
+	Returns:a Flux that upon first subscribe causes the source Flux to subscribe once, late subscribers might therefore miss items.
+	
+	share = publish().refCount(1) :
+		wait for atleast 1 subscribers to connect and then transmit data.  
+		whoever connects at that time or after first 1 subscriber, they get the same shared data and
+		late subscribers might therefore miss items
+		
+		if all the items emitted/cancelled,  the refCount becomes 0. If any one joins again, the refCount becomes  and the same above process continues again.
+		
+
+publish: ConnectableFlux<String> reactor.core.publisher.Flux.publish()
+-----------------------------------------------------------------------------------------------
+	Prepare a ConnectableFlux which shares this Flux sequence and dispatches values to subscribers in a backpressure-aware manner. 
+	Prefetch will default to Queues.SMALL_BUFFER_SIZE.
+	This will effectively turn 	any type of sequence into a hot sequence. 
+	
+	publish().refCount(2):	
+		wait for atleast 2 subscribers to connect and then transmit data.  
+		whoever connects at that time or after first 2 subscriber, they get the same shared data and
+		late subscribers might therefore miss items
+
+		if all the items emitted/cancelled,  the refCount becomes 0. If any one joins again, the refCount becomes  and the same above process continues again.
+		
+		
+autoConnect: Flux<String> reactor.core.publisher.ConnectableFlux.autoConnect(int minSubscribers)
+-----------------------------------------------------------------------------------------------		
+	Connects this ConnectableFlux to the upstream source when the specified amount of org.reactivestreams.Subscriber subscribes. 
+
+	Subscribing and immediately unsubscribing still contributes to the counter thattriggers the connection. 
+
+	autoConnect(1) :
+		The publisher starts produces data when atleast one subscriber connects and do not wait for others.
+		whoever connects at that time or after first 1 subscriber, they get the same shared data and
+		late subscribers might therefore miss items
+		if all the items emitted, it will not start again like publish.refCount(1) for new subscribers
+	
+	autoConnect(0)
+		You dont even need any minimum subscribers to start emitting the data. 
+		The publisher starts produces data immediately and do not wait for any subscribers.
+		late subscribers might therefore miss items
+		if all the items emitted, it will not start again like publish.refCount(1) for new subscribers
+
+	
+		
+
+cache:	Flux<String> reactor.core.publisher.Flux.cache(int history)
+-----------------------------------------------------------------------------------------------
+
+	Turn this Flux into a hot source and cache last emitted signals for further Subscriber.
+	
+	Will retain up to the given history size onNext signals. Completion and Error will also be replayed. 
+
+	Note that cache(0) will only cache the terminal signal without expiration. 
+	
+	As soon as items are emitted, the items are cached and we adjust the value to how many to cache.
+	When new subscribers joined, the cacheddata is replyed and it will be very fast
+
+
+
+Hot Publisher Summary:
+-----------------------
+
+share, publish().refCount(1)
+	At lelast 1 subscriber required. 
+	It will reconnect later when all the subscribers cancelled and some new subscriber appears again.
+	
+	
+publish().autoConnect(1)
+	Same as above, but no re-subscription.
+	If the source emits, subscribers will recieve item
+	
+publish().autoConnect(0)
+	real hot publisher - no subscriber required to emit data
+	
+cache()
+	Cachec the emiited items for late subscribers

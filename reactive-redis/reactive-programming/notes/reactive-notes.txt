@@ -1,0 +1,485 @@
+Mono:
+------------------------------------------------------
+	Emits 0 or 1 item
+	Followed by onComplete / onError
+	
+	
+Flux:
+------------------------------------------------------
+	Emits 0 or N item
+	Followed by onComplete / onError
+
+Java Streams / Reactive Streams are lazy:	
+------------------------------------------------------
+	Java Streams are lazy unless a terminal operator is connected
+	The stream pipelines are executed only if a terminal operator is executed.
+	
+	Reactive pipelines are executed only if a subscriber is subscribed
+	
+
+Subscribe Paramters:
+------------------------------------------------------
+	onNext(Consumer<T>)
+	onError(Consumer<Throwable>)
+	onComplete(Runnable)		-- doesnt accept any paramter and doesnt return any.
+
+
+callable vs runnable vs future in java:
+------------------------------------------------------
+	The Runnable interface is used to create a simple thread, while the Callable interface is used to create a thread that returns a result. 
+	The Future interface is used to retrieve the result of a Callable interface
+	
+	There are two ways of creating threads – one by extending the Thread class and other by creating a thread with a Runnable. 
+	However, one feature lacking in  Runnable is that we cannot make a thread return result when it terminates, i.e. when run() completes. 
+	For supporting this feature, the Callable interface is present in Java
+	
+	For implementing Runnable, the run() method needs to be implemented which does not return anything, 
+	while for a Callable, the call() method needs to be implemented which returns a result on completion.
+	Note that a thread can’t be created with a Callable, it can only be created with a Runnable.
+	
+	Another difference is that the call() method can throw an exception whereas run() cannot.
+	
+	public Object call() throws Exception;
+	
+	https://www.geeksforgeeks.org/callable-future-java/
+	
+
+
+Flux - Create / Generate / Push
+------------------------------------------------------
+	Keep emitting items with publisher until certain condition met
+	
+Flux.create : <T> Flux<T> create(Consumer<? super FluxSink<T>> emitter
+	Programmatically create a Flux with the capability of emitting multiple elements in a synchronous or asynchronous manner through the FluxSink API.
+	This includes emitting elements from multiple threads. 
+	
+	only one instance of fluxsink in create is used to emit multiple elements here even in multi thread case and it is thread safe to use
+	
+	developer has to maintain the loop /logic to emit multiple elements until certain condition met to complete / error.
+	
+	If downstream system (subscriber) is  cancelled, then flux sink should not emit data and it has to be handled by developer.
+	
+	
+Flux.generate:  <T> Flux<T> generate(Consumer<SynchronousSink<T>> generator) 
+	Programmatically create a Flux by generating signals one-by-one via a consumer callback and some state. The stateSupplier may return null.
+	
+	using SynchronousSink in generate, only one element can be emitted
+	
+	developer has to maintain the logic to complete / error until certain condition met.	
+	
+	If downstream system (subscriber) is  cancelled, then SynchronousSink will not emit data which is handled by it
+	
+Flux.push: Flux<T> push(Consumer<? super FluxSink<T>> emitter
+	Programmatically create a Flux with the capability of emitting multiple elements from a single-threaded producer through the FluxSink API. 
+	For a multi-threaded capable alternative, see Flux.create(Consumer). 
+	
+	
+	
+	
+Operators:
+------------------------------------------------------
+
+handle = filter + map	<Object> Flux<Object> reactor.core.publisher.Flux.handle(BiConsumer<? super Integer, SynchronousSink<Object>> handler)
+	use SynchronousSink to filter or emit / complete manually
+	
+	Handle the items emitted by this Flux by calling a biconsumer with theoutput sink for each onNext. 
+	At most one SynchronousSink.next(Object)call must be performed and/or 0 or 1 SynchronousSink.error(Throwable) or SynchronousSink.complete()
+	
+	Handle the items emitted by this Flux by calling a biconsumer with the output sink for each onNext. 
+	At most one SynchronousSink.next(Object)call must be performed and/or 0 or 1 SynchronousSink.error(Throwable) or SynchronousSink.complete().
+
+
+
+Callbacks:
+------------------------------------------------------
+
+Flux.create(fluxSink -> {
+	System.out.println("inside fluxSink create");
+	for (int i = 0; i < 5; i++) {
+		fluxSink.next(i);
+	}
+	 fluxSink.complete();
+	//fluxSink.error(new RuntimeException("oops"));
+	System.out.println("--fluxSink completed--");
+})
+.doOnComplete(() -> System.out.println("doOnComplete 1:"))
+.doFirst(() -> System.out.println("doFirst:"))
+.doFirst(() -> System.out.println("doAnotherFirst:"))
+.doOnNext(o -> System.out.println("doOnNext : " + o))
+.doOnRequest(l -> System.out.println("doOnRequest 1: " + l))
+.doOnSubscribe(s -> System.out.println("doOnSubscribe 1: " + s))
+.doOnRequest(l -> System.out.println("doOnRequest 2: " + l))
+.doOnError(err -> System.out.println("doOnError : " + err.getMessage()))
+.doOnTerminate(() -> System.out.println("doOnTerminate"))
+.doOnSubscribe(s -> System.out.println("doOnSubscribe 2: " + s))
+.doOnCancel(() -> System.out.println("doOnCancel"))
+.doFinally(signal -> System.out.println("doFinally 1 : " + signal))
+.doFinally(signal -> System.out.println("doFinally 2 : " + signal))
+.doOnDiscard(Object.class, o -> System.out.println("doOnDiscard : " + o))
+.take(2)
+.doOnComplete(() -> System.out.println("doOnComplete 2:"))
+.doFinally(signal -> System.out.println("doFinally 3 : " + signal))
+.subscribe(Util.subscriber("Subscriber"));
+
+
+
+doFirst:	Flux<Object> reactor.core.publisher.Flux.doFirst(Runnable onFirst)
+	Executes very first in the above pipelines
+	
+	Add behavior (side-effect) triggered before the Flux is subscribed to, which should be the first event after assembly time
+	
+	Note that when several doFirst(Runnable) operators are used anywhere in a chain of operators, 
+	their order of execution is reversed compared to the declarationorder 
+	(as subscribe signal flows backward, from the ultimate subscriber to the sourcepublisher)
+	
+	
+	
+doOnSubscribe:	Flux<Object> reactor.core.publisher.Flux.doOnSubscribe(Consumer<? super Subscription> onSubscribe)	
+	Add behavior (side-effect) triggered when the Flux is being subscribed,that is to say when a Subscription has been produced by the Publisher 
+	and is being passed to the Subscriber.onSubscribe(Subscription). 
+
+	This method is not intended for capturing the subscription and calling its methods,but for side effects like monitoring. 
+	For instance, the correct way to cancel a subscription is to call Disposable.dispose() on the Disposable returned by Flux.subscribe(). 
+	
+	Pipeline execution order: Subscription flows from top (publisher) to bottom (subscriber)
+
+
+doOnRequest:	Flux<Object> reactor.core.publisher.Flux.doOnRequest(LongConsumer consumer)
+	Once the subscription is received by the subscriber, subscriber will request the no of items (N/Unbounded) to emit by the Publisher.
+	
+	Based on the request received from subscriber, publisher will produce the items which means here fluxSink will emit the items using next() in Flux.create
+
+	Add behavior (side-effect) triggering a LongConsumer when this Fluxreceives any request. 
+	The LongConsumer is executed first, then the request signal is propagatedupstream to the parent.
+	
+	Pipeline execution order: Request flows from bottom to top
+	
+
+doOnNext:	Flux<Object> reactor.core.publisher.Flux.doOnNext(Consumer<? super Object> onNext)
+	Add behavior (side-effect) triggered when the Flux emits an item. 
+	
+	The Consumer is executed first, then the onNext signal is propagated downstream (whenever the doOnNext executes when data emission happens, 
+	the onNext() of Subscriber will get executed)
+	
+	whenever publisher pushes the next item, the data goes to the downstream, doOnNext will get executed and for each data emitted	
+ 	
+	
+doOnComplete:	Flux<Object> reactor.core.publisher.Flux.doOnComplete(Runnable onComplete)
+	Add behavior (side-effect) triggered when the Flux completes successfully. 
+	The Runnable is executed first, then the onComplete signal is propagated downstream.
+	
+	
+doOnTerminate:	The Runnable is executed first, then the onComplete signal is propagated downstream.
+	Add behavior (side-effect) triggered when the Flux terminates, either by completing successfully or failing with an error. (After doOnComplete/ doOnError, doOnTerminate
+	will get executed)
+	For cancel signal, doOnTerminate will not get executed
+	The Runnable is executed first, then the onComplete/onError signal is propagated downstream.
+
+
+doOnError:	Flux<Object> reactor.core.publisher.Flux.doOnError(Consumer<? super Throwable> onError)
+	Add behavior (side-effect) triggered when the Flux completes with an error. 
+	The Consumer is executed first, then the onError signal is propagateddownstream.
+
+
+doFinally: Flux<Object> reactor.core.publisher.Flux.doFinally(Consumer<SignalType> onFinally)
+	Add behavior (side-effect) triggered after the Flux terminates for any reason, including cancellation. 
+	The terminating event (SignalType.ON_COMPLETE, SignalType.ON_ERROR and SignalType.CANCEL) is passed to the consumer, 
+	which is executed after the signal has been passed downstream. 
+
+	Note that the fact that the signal is propagated downstream before the callback is executed means 
+	that several doFinally in a row will be executed in reverse order. 
+	If you want to assert the execution of the callback please keep in mind that the Flux will complete before it is executed, 
+	so its effect might not be visible immediately after eg. a blockLast(). 
+
+	Parameters:onFinally the callback to execute after a terminal signal (complete, erroror cancel)
+
+
+
+doOnCancel: 	Flux<Object> reactor.core.publisher.Flux.doOnCancel(Runnable onCancel)
+	Add behavior (side-effect) triggered when the Flux is cancelled. 
+
+	The handler is executed first, then the cancel signal is propagated upstream to the source.
+	Ex: take(3) -- after 3 items, take() will send cancel signal to upstream and complete signal to downstream. so the doOnComplete below take() downstream	pipelines get executed 
+	but not on the above take() upstream pipelines because, for upstream pipelines doOnCancel gets executed.
+
+
+doOnDiscard: <Object> Flux<Object> reactor.core.publisher.Flux.doOnDiscard(Class<Object> type, Consumer<? super Object> discardHook)
+	Potentially modify the behavior of the whole chain of operators upstream of this one to conditionally clean up elements that get discarded by these operators. 
+
+	The discard Hook MUST be idempotent and safe to use on any instance of the desired type .Calls to this method are additive, 
+	and the order of invocation of the discard Hook is the same as the order of declaration (calling .filter(...).doOnDiscard(first).doOnDiscard(second)
+	will let the filter invoke first then second handlers). 
+
+	Two main categories of discarding operators exist: 
+	•filtering operators, dropping some source elements as part of their designed behavior
+	•operators that prefetch a few elements and keep them around pending a request, but get cancelled/in error
+
+
+Complete Success Event: Emits 5/5 elements
+------------------------------------------------------
+doAnotherFirst:
+doFirst:
+doOnSubscribe 1: reactor.core.publisher.FluxPeekFuseable$PeekConditionalSubscriber@5d20e46
+doOnSubscribe 2: reactor.core.publisher.FluxPeekFuseable$PeekConditionalSubscriber@709ba3fb
+doOnRequest 2: 9223372036854775807
+doOnRequest 1: 9223372036854775807
+inside fluxSink create
+doOnNext : 0
+Subscriber - Received : 0
+doOnNext : 1
+Subscriber - Received : 1
+doOnNext : 2
+Subscriber - Received : 2
+doOnNext : 3
+Subscriber - Received : 3
+doOnNext : 4
+Subscriber - Received : 4
+doOnComplete 1:
+doOnTerminate
+doOnComplete 2:
+Subscriber - Completed
+doFinally 3 : onComplete
+doFinally 2 : onComplete
+doFinally 1 : onComplete
+--fluxSink completed--
+
+
+Error Event: After Emiting 5/5 elements
+----------------------------------------------------
+doAnotherFirst:
+doFirst:
+doOnSubscribe 1: reactor.core.publisher.FluxPeekFuseable$PeekConditionalSubscriber@5d20e46
+doOnSubscribe 2: reactor.core.publisher.FluxPeekFuseable$PeekConditionalSubscriber@709ba3fb
+doOnRequest 2: 9223372036854775807
+doOnRequest 1: 9223372036854775807
+inside fluxSink create
+doOnNext : 0
+Subscriber - Received : 0
+doOnNext : 1
+Subscriber - Received : 1
+doOnNext : 2
+Subscriber - Received : 2
+doOnNext : 3
+Subscriber - Received : 3
+doOnNext : 4
+Subscriber - Received : 4
+doOnError : oops
+doOnTerminate
+Subscriber - ERROR : oops
+doFinally 3 : onError
+doFinally 2 : onError
+doFinally 1 : onError
+--fluxSink completed--
+
+Cancel Event using take(2): After Emiting 2/5 elements
+------------------------------------------------------
+doAnotherFirst:
+doFirst:
+doOnSubscribe 1: reactor.core.publisher.FluxPeekFuseable$PeekConditionalSubscriber@7ff2a664
+doOnSubscribe 2: reactor.core.publisher.FluxPeekFuseable$PeekConditionalSubscriber@525b461a
+doOnRequest 2: 9223372036854775807
+doOnRequest 1: 9223372036854775807
+inside fluxSink create
+doOnNext : 0
+Subscriber - Received : 0
+doOnNext : 1
+Subscriber - Received : 1
+doOnCancel
+doFinally 1 : cancel
+doFinally 2 : cancel
+doOnComplete 2:
+Subscriber - Completed
+doFinally 3 : onComplete
+doOnDiscard : 2
+doOnDiscard : 3
+doOnDiscard : 4
+--fluxSink completed--
+
+
+
+limitRate:	Flux<Integer> reactor.core.publisher.Flux.limitRate(int highTide, int lowTide)
+------------------------------------------------------
+The subscriber makes unbounded request.
+
+But the limitRate request 10 items to the publisher and the publisher starts emiting items.
+When the subscriber received 75% of the requested items which is 8 items received  in the data pipeline, the limitRate makes a another 75% request again with 8 items more.
+WHenver the data is drained/consumed in the pipeline, limitRate sends another request with default 75% of total elements in the paramter.
+
+This is very useful, when the publisher and subscriber have different process speeds becuase they runs on different threads, 
+so the subscriber can limit the data it request based on the processing capability
+
+limitRate(10) // 75% -- default is 75%. request 75% of items which is 8 here.  
+limitRate(10 , 0) // request 100 % of items which 10 always here
+
+-- To adjust the data limit and drain percentage:
+limitRate(100), limitRate(100, 100) -- This will take default 75%.  This drain 75% of data i received and then makes another request to emit
+limitRate(100, 0)	- This will drain 100 % of data, which means i will be draining all data i received and then makes another request to emit
+limitRate(100, 99)	- This will drain 99 % of data, which means i will be draining 99% data i received and then makes another request to emit
+
+
+Flux.range(1, 20)  -- 10+8+8
+.log()
+.limitRate(10) // 75%
+.log()
+.subscribe(Util.subscriber());
+
+
+[ INFO] (main) | onSubscribe([Synchronous Fuseable] FluxRange.RangeSubscription)
+[ INFO] (main) | onSubscribe([Fuseable] FluxPublishOn.PublishOnSubscriber)
+[ INFO] (main) | request(unbounded)
+[ INFO] (main) | request(10)
+[ INFO] (main) | onNext(1)
+[ INFO] (main) | onNext(1)
+Received : 1
+[ INFO] (main) | onNext(2)
+[ INFO] (main) | onNext(2)
+Received : 2
+[ INFO] (main) | onNext(3)
+[ INFO] (main) | onNext(3)
+Received : 3
+[ INFO] (main) | onNext(4)
+[ INFO] (main) | onNext(4)
+Received : 4
+[ INFO] (main) | onNext(5)
+[ INFO] (main) | onNext(5)
+Received : 5
+[ INFO] (main) | onNext(6)
+[ INFO] (main) | onNext(6)
+Received : 6
+[ INFO] (main) | onNext(7)
+[ INFO] (main) | onNext(7)
+Received : 7
+[ INFO] (main) | onNext(8)
+[ INFO] (main) | onNext(8)
+Received : 8
+[ INFO] (main) | request(8)
+[ INFO] (main) | onNext(9)
+[ INFO] (main) | onNext(9)
+Received : 9
+[ INFO] (main) | onNext(10)
+[ INFO] (main) | onNext(10)
+Received : 10
+[ INFO] (main) | onNext(11)
+[ INFO] (main) | onNext(11)
+Received : 11
+[ INFO] (main) | onNext(12)
+[ INFO] (main) | onNext(12)
+Received : 12
+[ INFO] (main) | onNext(13)
+[ INFO] (main) | onNext(13)
+Received : 13
+[ INFO] (main) | onNext(14)
+[ INFO] (main) | onNext(14)
+Received : 14
+[ INFO] (main) | onNext(15)
+[ INFO] (main) | onNext(15)
+Received : 15
+[ INFO] (main) | onNext(16)
+[ INFO] (main) | onNext(16)
+Received : 16
+[ INFO] (main) | request(8)
+[ INFO] (main) | onNext(17)
+[ INFO] (main) | onNext(17)
+Received : 17
+[ INFO] (main) | onNext(18)
+[ INFO] (main) | onNext(18)
+Received : 18
+[ INFO] (main) | onNext(19)
+[ INFO] (main) | onNext(19)
+Received : 19
+[ INFO] (main) | onNext(20)
+[ INFO] (main) | onNext(20)
+Received : 20
+[ INFO] (main) | onComplete()
+[ INFO] (main) | onComplete()
+Completed
+
+
+
+delayElements:
+------------------------------------------------------
+	reactor.util.concurrent.Queues - Class defines Min 8 and Max 32 items as default to emit when using delayElements
+	and it takes Max always which is 32 to emit.
+
+	To change the behaviour,  System.setProperty("reactor.bufferSize.x", "9");
+	
+	Here publisher emits 32 items as per request comes delayElements of Queue size and upon 75% draining, it will send subsequent request again which is 24 elements.
+	
+Flux.range(1, 100)  // 32
+	.log()
+	.delayElements(Duration.ofSeconds(1))
+	.subscribe(Util.subscriber());
+	
+	
+	
+	
+onError:
+------------------------------------------------------
+onErrorReturn:	Flux<Integer> reactor.core.publisher.Flux.onErrorReturn(Integer fallbackValue)
+	Simply emit a captured fallback value when any error is observed on this Flux. 
+	
+	Gives some default value and sends cancel to upstream and complete to downstream.  It will not emit other elements and complete there. 
+
+
+onErrorResume:	Flux<Integer> reactor.core.publisher.Flux.onErrorResume(Function<? super Throwable, ? extends Publisher<? extends Integer>> fallback)
+	Subscribe to a returned fallback publisher when any error occurs, using a function to choose the fallback depending on the error. 
+	
+	Gives some default value using callback and sends cancel to upstream and complete to downstream. It will not emit other elements and complete there. 
+
+
+onErrorContinue:	Flux<Integer> reactor.core.publisher.Flux.onErrorContinue(BiConsumer<Throwable, Object> errorConsumer)
+	Let compatible operators upstream recover from errors by dropping the incriminating element from the sequence and continuing with subsequent elements.
+	The recovered error and associated value are notified via the provided BiConsumer. Alternatively, 
+	throwing from that biconsumer will propagate the thrown exception downstream in place of the original error, 
+	which is added as a suppressed exception to the new one. 
+	
+	Even if error happens in upstream, this will continue other elements to emit. 
+	
+	If error  is rethrown in onErrorContinue,  Subscriber.onError gets executed with the new error
+	
+	
+	
+transform:
+------------------------------------------------------
+	build a reusable pipeline which can be used across various pipelines to be executed.
+	
+	especially for reusing the pipeline blocks
+
+
+switchOnFirst:
+------------------------------------------------------
+
+Based on the first item, it will take decission.
+
+Consider In a pipeline, we have some expectation.
+
+Ex: In order to proceed in this downstream pipeline, your data should be in particular format. only then we can do operations.
+We can put switchOnFirst on the top of pipeline and check the incoming data is in supported format or not to the downstream pipelines.
+If it is ok, then use the existing pipeline, else apply some transformation on it and use the pipeline
+
+
+flatMap:
+------------------------------------------------------
+	Transform the elements emitted by this Flux asynchronously into Publishers,
+	then flatten these inner publishers into a single Flux through merging,which allow them to interleave. 
+
+	This will internally subscribes to all the publishers and flattens the result and send it to downstreams
+
+
+concatMap:
+------------------------------------------------------
+	Transform the elements emitted by this Flux asynchronously into Publishers,
+	then flatten these inner publishers into a single Flux, sequentially and preserving order using concatenation. 
+	
+	
+/*
+* Flatmap: 
+*  Async in nature
+*  Ordering does not maintain and it is fast
+*  Transform the elements emitted by this Flux asynchronously into Publishers,
+   then flatten these inner publishers into a single Flux through merging, which allow them to interleave. 
+*  
+* ConcatMap:
+*  Sync in nature
+*  Ordering maintains and it takes time to complete due to ordering maintaining
+* */

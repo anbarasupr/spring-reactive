@@ -1,0 +1,93 @@
+Sinks:
+	Sinks are better alternative to reactor processor
+	Sinks acts as both publisher and subscriber
+	Sinks exposed as Flux or Mono and subscriber subscribe to it
+	
+Sink Type:
+----------
+
+Type					Behaviour				Pub:Sub
+--------------------------------------------------------------------------------------------------------------
+one						Mono					1:N (one publisher, multiple subscribers)
+many-unicast			Flux					1:1	(one publisher, one subscriber)
+many-multicast			Flux					1:N	(one publisher, multiple subscribers)
+many-replay				Flux					1:N (with replay of all values to late subscribers) 
+
+
+
+Sink One:
+----------------------------------------------------------
+Sinks.One<Object> sink = Sinks.one() - Capable of emitting one value or empty or error
+
+sink.tryEmitValue("Hello")  						- Emit value
+sink.tryEmitEmpty()									- Emit empty
+sink.tryEmitError(new RuntimeException("test")) 	- Emit error
+
+
+emitValue:	void reactor.core.publisher.Sinks.One.emitValue(@Nullable Object value, EmitFailureHandler failureHandler)
+	A simplified attempt at emitting a non-null element via the tryEmitValue(Object) API, generating an onNext signal immediately 
+	followed by an Subscriber.onComplete() signal.
+	If the result of the attempt is not a success, implementations SHOULD retry the tryEmitValue(Object) call 
+	If the provided EmitFailureHandler returns true. 
+
+
+
+many-unicast:
+-----------------------------------
+Sinks.many().unicast().onBackpressureBuffer();
+	Only one subscriber  can subscribe.
+	If there are multiple subscriber, it throw error: ERROR : UnicastProcessor allows only a single Subscriber
+
+
+
+many-multicast:
+-----------------------------------
+Sinks.many().multicast().onBackpressureBuffer();
+	 When a first subscriber connects, the messages in the queue played to him
+	 Whoever joined after first subscriber, they will get only new messages after subscribe
+	 
+	 
+Sinks.many().multicast().directAllOrNothing() : Disable history
+	To disable above initial messages in the queue,
+	Whoever joined after that, whatever the messages emitted, they see only those
+	If you want disable the buffering behaviour of above, then use this
+	
+	A Sinks.Many with the following characteristics: 
+		•Multicast
+		•Without Subscriber: fail fast on tryEmitNext.
+		•Backpressure : notify the caller with EmitResult.FAIL_OVERFLOW if any of the subscriberscannot process an element,
+		failing fast and backing off from emitting the element at all (all or nothing).
+		From the perspective of subscribers, data is dropped and never seen but they are not terminated. 
+		•Replaying: No replay of elements. Only forwards to a Subscriber the elements thathave been pushed to the sink AFTER this subscriber was subscribed,
+		provided all of the subscribershave demand.
+
+
+	Type Parameters:<T> the type of elements to emitReturns:a multicast Sinks.Many that "drops" in case any subscriber is too slow
+		
+
+Sinks.many().multicast().directBestEffort();
+	A Sinks.Many with the following characteristics: 
+	•Multicast
+	•Without Subscriber: fail fast on tryEmitNext.
+	•Backpressure : notify the caller with EmitResult.FAIL_OVERFLOW if noneof the subscribers can process an element. 
+	Otherwise, it ignores slow subscribers and emits the element to fast ones as a best effort. From the perspective of slow subscribers, 
+	data is droppedand never seen, but they are not terminated. 
+	•Replaying: No replay of elements. Only forwards to a Subscriber the elements thathave been pushed to the sink AFTER this subscriber was subscribed.
+
+
+	Type Parameters:<T> the type of elements to emitReturns:a multicast Sinks.Many that "drops" in case of no demand from any subscriber
+	
+	
+
+replay:
+-----------------------------------------
+Sinks.many().replay().all():	<Object> Many<Object> reactor.core.publisher.Sinks.MulticastReplaySpec.all()
+Sinks.many().replay().all(2):	<Object> Many<Object> reactor.core.publisher.Sinks.MulticastReplaySpec.all(int batchSize)
+
+	A Sinks.Many with the following characteristics: 
+	•Multicast
+	•Without Subscriber: all elements pushed to this sink are remembered,even when there is no subscriber.
+	•Backpressure : this sink honors downstream demand of individual subscribers.
+	•Replaying: all elements pushed to this sink are replayed to new subscribers.
+	
+	batchSize the underlying buffer will optimize storage by linked arrays of given size

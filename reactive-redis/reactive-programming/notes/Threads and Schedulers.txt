@@ -1,0 +1,49 @@
+									Threads and Schedulers:
+-----------------------------------------------------------------------------------------------
+
+Schdulers:
+-----------------------------------------------------------------------------------------------
+Schedulers Method and  its usage:
+	boundedElastic 	-> 	Network and time consuming calls ((No of threads equal to 10  multiple No of CPU cores - 4cores * 10 = 40 threads))	- 10 threads per cpu
+	parallel		->	CPU intensive tasks	(No of threads equal to No of CPU cores - 4cores * 1 thread = 4 threads) - 1 thread per cpu
+	single			->	A single dedicated thread for one off tasks
+	immediate		->	Current thread
+	
+	
+Operators for scheduling:
+-----------------------------------------------------------------------------------------------
+Operator and its usage:
+		subscribeOn		->	for upstream (In case of multiple schedulers, the closest scheduler to the publisher takes precedence)
+		publishOn		->  for downstream (In case of multiple schedulers, the closest scheduler to the subscriber takes precedence)
+		
+By default, all the tasks in a pipeline are executed by current thread which is executing the pipeline
+
+Multiple subscribeOn:
+ if there are multiple schedulers like with newParallel and boundedElastic schedulers, the closest scheduler to the publisher takes precedence over other schedulers
+ 
+ 
+Schdulers != Parallel Execution: 
+-----------------------------------------------------------------------------------------------
+	All the operations are always executed in sequential
+	Data is processed one by one via 1 thread in the ThreadPool for a subscriber
+	Schedulers.parallel() - is a thread pool for CPU tasks. Does not mean parallel execution
+	
+	
+	
+
+parallel().runOn():	ParallelFlux<Integer> reactor.core.publisher.Flux.parallel(int parallelism)
+-----------------------------------------------------------------------------------------------
+	Prepare this Flux by dividing data on a number of 'rails' matching theprovided parallelism parameter, in a round-robin fashion. 
+	Note that to actually perform the work in parallel, you should call ParallelFlux.runOn(Scheduler) afterward.
+	
+	
+ 	Multiple subscribers can be run in multiple threads (one subscriber for one thread) using subscribeOn and publishOn schedulers. 
+	But each task in a pipeline gets executed sequentialy for each subscriber. We cannot achieve parallelism in every pipeline level for each subscriber.
+	
+	To achieve parallelism in pipeline level,  to run each task in a pipeline to execute in a separate thread for a each subscriber, this can be used.
+	
+	
+	
+delayElements and Flux.interval
+-----------------------------------------------------------------------------------------------
+By default, delayElements and Flux.interval uses subscribeOn(Schdulers.parallel)

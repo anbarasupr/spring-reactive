@@ -1,0 +1,13 @@
+Context:
+	Consider a bookservice exposing api via httpservice. A get method to get the book details.
+	The api endpoint is restricted to add security to allow only the authenticated users.
+	In this case, we will be using http header to provide additional information like cookie
+	Headers are simple  key value pairs like map
+	
+	Context are also like http headers as map to provide additional information about the request.
+	Context are set by downstream and can be view/update only by upstream and not view by his downstream who is created the context.
+	Context are thread safe by default and immutable. When context update happens,  a new instance is created.
+	
+	
+	
+	

@@ -1,0 +1,53 @@
+Repeat & Retry:
+
+Type and its behaviour:
+----------------------------------------------------
+repeat		-	Resubscribe after complete signal
+retry		-	Resubscribe after error signal
+
+
+
+repeat
+--------------------------------------------------------------------------------------------------------
+
+repeat(2): Flux<Integer> reactor.core.publisher.Flux.repeat(long numRepeat)
+	Repeatedly subscribe to the source numRepeat times. This results in numRepeat + 1 total subscriptions to the original source. 
+	As a consequence,using 0 plays the original sequence once. 
+
+	Parameters: numRepeat the number of times to re-subscribe on onComplete (positive, or 0 for original sequence only)
+	Repeatedly subscribe to the source if the predicate returns true after completion of the previous subscription.
+	
+	After first time complete, repeat will execute the pipeline again 2 more times
+	
+	when first time completes, the complete signal not even went to the subscriber and repeat will consume it and resubscribe again 2 more times and ake the source emit data again
+    and executes the pipe lines 2 mores times. after executing 3 times only, the complete signal reaches the subscriber
+
+
+repeat():	Flux<Integer> reactor.core.publisher.Flux.repeat()
+	Repeatedly and indefinitely subscribe to the source upon completion of the previous subscription
+
+
+repeat: Flux<Integer> reactor.core.publisher.Flux.repeat(BooleanSupplier predicate)
+	Repeatedly subscribe to the source if the predicate returns true after completion of the previous subscription. 
+
+	Parameters:predicate the boolean to evaluate on onComplete.
+	
+
+
+retry:
+--------------------------------------------------------------------------------------------------------
+retry():	Flux<Integer> reactor.core.publisher.Flux.retry()
+	Re-subscribes to this Flux sequence if it signals any error, indefinitely
+
+
+
+retry(2):	Flux<Integer> reactor.core.publisher.Flux.retry(long numRetries)
+	Re-subscribes to this Flux sequence if it signals any error, for a fixed number of times. 
+
+	Note that passing Long.MAX_VALUE is treated as infinite retry. 
+
+
+retryWhen(Retry.fixedDelay(2, Duration.ofSeconds(3)))
+	retry 2 times after delay of seconds
+	
+
