@@ -26,6 +26,8 @@ public class ReactiveMathController {
 
     @GetMapping("table/{input}")
     public Flux<Response> multiplicationTable(@PathVariable int input){
+    	// acts as Mono<List<Response>> in AbstractJackson2Encoder due to TEXT_EVENT_STREAM_VALUE not found here
+    	// so we have to wait for the whole process to complete
         return this.mathService.multiplicationTable(input);
     }
 

@@ -1,0 +1,10 @@
+Spring Webflux:
+	Responsive
+	Resilient - Staying responsive in case of failure
+	Elastic - Staying responsive in case of vary load
+	Messsage Driven - aync and non blocking backpressure
+	
+Note: Do's In reactive rest api
+	Accept the request, do the processing, return a publisher (mono/flux)
+	Do not block / subscribe
+	

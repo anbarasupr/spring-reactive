@@ -49,6 +49,11 @@ public class RequestHandler {
     public Mono<ServerResponse> squareHandlerWithValidation(ServerRequest serverRequest){
         int input = Integer.parseInt(serverRequest.pathVariable("input"));
         if(input < 10 || input > 20){
+//        	 InputFailedValidationResponse response = new InputFailedValidationResponse();
+//             response.setErrorCode(100);
+//             response.setInput(input);
+//             response.setMessage("allowed range is 10 - 20");
+//        	return ServerResponse.badRequest().bodyValue(serverRequest);
             return Mono.error(new InputValidationException(input));
         }
         Mono<Response> responseMono = this.mathService.findSquare(input);
