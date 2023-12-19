@@ -1,0 +1,24 @@
+Step Verifier:
+--------------------
+
+
+StepVerifier.create(...)
+	
+Next
+	expectNext(...)
+	expectNextCount()
+	thenConsumeWhile(..)
+	
+Verify
+	verifyComplete()
+	verify(Duration)
+	verifyError()
+
+For Slow publisher
+	StepVerifier.withVirtualTime( () -> getFlux() )
+	thenAwait(Duration)
+	
+StepVerifierOptions
+	Context
+	Scenario name
+	

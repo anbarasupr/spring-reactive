@@ -12,7 +12,8 @@ public class Lec06ScenarioNameTest {
 
         Flux<String> flux = Flux.just("a", "b", "c");
 
-        StepVerifierOptions scenarioName = StepVerifierOptions.create().scenarioName("alphabets-test");
+        StepVerifierOptions scenarioName = StepVerifierOptions.create().scenarioName("alphabets-test"); 
+        // give the scenario name to identify the test name helpful in failing in which scenario it isfailed
 
         StepVerifier.create(flux, scenarioName)
                 .expectNextCount(12)
@@ -28,7 +29,8 @@ public class Lec06ScenarioNameTest {
 
         StepVerifier.create(flux)
                 .expectNext("a")
-                .as("a-test")
+                .as("a-test") // Set a description for the previous verification step.
+                // Choosing a unique and descriptive name can make assertion errors easier to resolve. 
                 .expectNext("b")
                 .as("b-test")
                 .expectNext("c")
