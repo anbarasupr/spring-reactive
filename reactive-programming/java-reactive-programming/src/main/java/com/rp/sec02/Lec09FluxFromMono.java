@@ -10,13 +10,18 @@ public class Lec09FluxFromMono {
 
         Mono<String> mono = Mono.just("a");
         Flux<String> flux = Flux.from(mono);
-        flux.subscribe(Util.onNext());
+        flux.subscribe(Util.onNext(), Util.onError(), Util.onComplete());
+
+        System.out.println("-----");
 
         Flux.range(1, 10)
                 .next() // 1 (Emit only the first item emitted by this Flux, into a new Mono)
+                .log()
                 .filter(i -> i > 3)
                 .subscribe(Util.onNext(), Util.onError(), Util.onComplete());
 
+        System.out.println("-----");
+        Util.sleepSeconds(3);
 
     }
 

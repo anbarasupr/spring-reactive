@@ -11,7 +11,7 @@ public class Lec03FluxFromArrayOrList {
 /*        Flux.fromIterable(strings)
                 .subscribe(Util.onNext());*/
 
-         Integer[] arr = { 2, 5, 7, 8};
+        Integer[] arr = { 2, 5, 7, 8};
         Flux.fromArray(arr)
                 .subscribe(Util.onNext());
 

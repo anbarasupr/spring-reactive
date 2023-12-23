@@ -9,9 +9,9 @@ public class Lec06SupplierRefactoring {
 	public static void main(String[] args) {
 
 //		executeNone();
-//		executeBlocking();
+		executeBlocking();
 //		executeNonBlocking();
-		executeBlockingV1();
+//		executeBlockingV1();
 	}
 
 	public static void executeNone() {
@@ -45,7 +45,8 @@ public class Lec06SupplierRefactoring {
 	}
 
 	private static Mono<String> getName() {
-		System.out.println("entered getName method");
+//		System.out.println("entered getName method");
+		System.out.println("entered getName method Thread:"+Thread.currentThread().getName());
 		return Mono.fromSupplier(() -> {
 			System.out.println("Generating name..");
 			Util.sleepSeconds(3);

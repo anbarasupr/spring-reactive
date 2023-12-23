@@ -14,7 +14,7 @@ public class Lec08MonoFromRunnable {
                         () -> {
                             System.out.println("process is done. Sending emails...");
                         });
-
+        System.out.println("--done--");
 
     }
 

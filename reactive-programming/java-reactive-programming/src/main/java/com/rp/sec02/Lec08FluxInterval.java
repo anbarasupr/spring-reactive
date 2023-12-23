@@ -11,7 +11,7 @@ public class Lec08FluxInterval {
 
         Flux.interval(Duration.ofSeconds(1))
                 .subscribe(Util.onNext());
-
+        System.out.println("-----");
         Util.sleepSeconds(5);
 
     }

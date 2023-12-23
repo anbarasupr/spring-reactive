@@ -6,7 +6,7 @@ public class Lec01Stream {
 
     public static void main(String[] args) {
 
-        Stream<Integer> stream = Stream.of(1)
+        Stream<Integer> stream = Stream.of(1, 2, 3)
                                         .map(i -> {
                                             try {
                                                 Thread.sleep(1000);

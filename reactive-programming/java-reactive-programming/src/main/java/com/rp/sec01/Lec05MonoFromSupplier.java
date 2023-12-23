@@ -18,7 +18,7 @@ public class Lec05MonoFromSupplier {
         mono.subscribe(
                 Util.onNext()
         );
-
+        System.out.println("-------------");
         Callable<String> stringCallable = () -> getName();
         Mono.fromCallable(stringCallable)
                 .subscribe(
