@@ -5,7 +5,6 @@ import lombok.ToString;
 import org.springframework.data.annotation.Id;
 
 @Data
-@ToString
 public class Product {
 
     @Id

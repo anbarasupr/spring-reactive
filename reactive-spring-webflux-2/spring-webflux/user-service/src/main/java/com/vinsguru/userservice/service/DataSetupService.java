@@ -26,7 +26,7 @@ public class DataSetupService implements CommandLineRunner {
         this.entityTemplate
                 .getDatabaseClient()
                 .sql(query)
-                .then()
+                .then() // Perform the SQL call and return a Mono that completes without resulton statement completion
                 .subscribe();
 
     }

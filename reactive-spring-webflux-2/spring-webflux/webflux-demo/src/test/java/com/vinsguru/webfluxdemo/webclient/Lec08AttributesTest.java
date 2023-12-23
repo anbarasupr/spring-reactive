@@ -19,7 +19,8 @@ public class Lec08AttributesTest extends BaseTest {
                 .post()
                 .uri("reactive-math/multiply")
                 .bodyValue(buildRequestDto(5, 2))
-             //   .attribute("auth", "oauth")
+                // .attribute("auth", "basic")
+                .attribute("auth", "oauth")
                 .retrieve()
                 .bodyToMono(Response.class)
                 .doOnNext(System.out::println);

@@ -28,7 +28,9 @@ public class Lec07QueryParamsTest extends BaseTest{
 
         Flux<Integer> integerFlux = this.webClient
                 .get()
-                 .uri(b -> b.path("jobs/search").query("count={count}&page={page}").build(map))
+                // .uri(queryString)
+                // .uri(b -> b.path("jobs/search").query("count={count}&page={page}").build(10, 20))
+                .uri(b -> b.path("jobs/search").query("count={count}&page={page}").build(map))
                 .retrieve()
                 .bodyToFlux(Integer.class)
                 .doOnNext(System.out::println);

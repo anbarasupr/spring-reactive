@@ -32,7 +32,7 @@ public class DataSetupService implements CommandLineRunner {
 
     private Flux<ProductDto> newProducts(){
         return Flux.range(1, 1000)
-                .delayElements(Duration.ofSeconds(2))
+                //.delayElements(Duration.ofSeconds(2))
                 .map(i -> new ProductDto("product-" + i, ThreadLocalRandom.current().nextInt(10, 100)));
     }
 
