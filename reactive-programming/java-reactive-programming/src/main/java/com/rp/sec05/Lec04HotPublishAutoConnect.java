@@ -13,7 +13,9 @@ public class Lec04HotPublishAutoConnect {
         Flux<String> movieStream = Flux.fromStream(() -> getMovie())
                 .delayElements(Duration.ofSeconds(1))
                 .publish()
-                .autoConnect(1);
+                // .autoConnect(1);
+        		// .autoConnect(2);
+        		.autoConnect(0);
 
         Util.sleepSeconds(3);
 

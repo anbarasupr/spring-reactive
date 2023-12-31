@@ -28,10 +28,11 @@ public class OrderService {
     }
 
     public static Flux<PurchaseOrder> getOrders(int userId){
+    	System.out.println("getOrders userId:"+userId);
         return Flux.create((FluxSink<PurchaseOrder> purchaseOrderFluxSink) -> {
             db.get(userId).forEach(purchaseOrderFluxSink::next);
             purchaseOrderFluxSink.complete();
-        })//.log()
+        }).log()
         .delayElements(Duration.ofSeconds(1));
     } 
 }

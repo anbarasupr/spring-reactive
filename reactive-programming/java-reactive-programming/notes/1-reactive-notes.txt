@@ -69,6 +69,7 @@ Flux.generate:  <T> Flux<T> generate(Consumer<SynchronousSink<T>> generator)
 	
 	If downstream system (subscriber) is  cancelled, then SynchronousSink will not emit data which is handled by it
 	
+	
 Flux.push: Flux<T> push(Consumer<? super FluxSink<T>> emitter
 	Programmatically create a Flux with the capability of emitting multiple elements from a single-threaded producer through the FluxSink API. 
 	For a multi-threaded capable alternative, see Flux.create(Consumer). 
@@ -82,7 +83,7 @@ Operators:
 handle = filter + map	<Object> Flux<Object> reactor.core.publisher.Flux.handle(BiConsumer<? super Integer, SynchronousSink<Object>> handler)
 	use SynchronousSink to filter or emit / complete manually
 	
-	Handle the items emitted by this Flux by calling a biconsumer with theoutput sink for each onNext. 
+	Handle the items emitted by this Flux by calling a biconsumer with the output sink for each onNext. 
 	At most one SynchronousSink.next(Object)call must be performed and/or 0 or 1 SynchronousSink.error(Throwable) or SynchronousSink.complete()
 	
 	Handle the items emitted by this Flux by calling a biconsumer with the output sink for each onNext. 
@@ -130,7 +131,7 @@ doFirst:	Flux<Object> reactor.core.publisher.Flux.doFirst(Runnable onFirst)
 	
 	Note that when several doFirst(Runnable) operators are used anywhere in a chain of operators, 
 	their order of execution is reversed compared to the declarationorder 
-	(as subscribe signal flows backward, from the ultimate subscriber to the sourcepublisher)
+	(as subscribe signal flows backward, from the ultimate subscriber to the source publisher)
 	
 	
 	
@@ -149,8 +150,8 @@ doOnRequest:	Flux<Object> reactor.core.publisher.Flux.doOnRequest(LongConsumer c
 	
 	Based on the request received from subscriber, publisher will produce the items which means here fluxSink will emit the items using next() in Flux.create
 
-	Add behavior (side-effect) triggering a LongConsumer when this Fluxreceives any request. 
-	The LongConsumer is executed first, then the request signal is propagatedupstream to the parent.
+	Add behavior (side-effect) triggering a LongConsumer when this Flux receives any request. 
+	The LongConsumer is executed first, then the request signal is propagated upstream to the parent.
 	
 	Pipeline execution order: Request flows from bottom to top
 	
@@ -159,7 +160,7 @@ doOnNext:	Flux<Object> reactor.core.publisher.Flux.doOnNext(Consumer<? super Obj
 	Add behavior (side-effect) triggered when the Flux emits an item. 
 	
 	The Consumer is executed first, then the onNext signal is propagated downstream (whenever the doOnNext executes when data emission happens, 
-	the onNext() of Subscriber will get executed)
+	the onNext() of Subscriber will get executed after)
 	
 	whenever publisher pushes the next item, the data goes to the downstream, doOnNext will get executed and for each data emitted	
  	
@@ -306,7 +307,7 @@ When the subscriber received 75% of the requested items which is 8 items receive
 WHenver the data is drained/consumed in the pipeline, limitRate sends another request with default 75% of total elements in the paramter.
 
 This is very useful, when the publisher and subscriber have different process speeds becuase they runs on different threads, 
-so the subscriber can limit the data it request based on the processing capability
+so the subscriber can limit the data it request based on its processing capability
 
 limitRate(10) // 75% -- default is 75%. request 75% of items which is 8 here.  
 limitRate(10 , 0) // request 100 % of items which 10 always here
@@ -327,7 +328,7 @@ Flux.range(1, 20)  -- 10+8+8
 [ INFO] (main) | onSubscribe([Synchronous Fuseable] FluxRange.RangeSubscription)
 [ INFO] (main) | onSubscribe([Fuseable] FluxPublishOn.PublishOnSubscriber)
 [ INFO] (main) | request(unbounded)
-[ INFO] (main) | request(10)
+[ INFO] (main) | request(10)	->
 [ INFO] (main) | onNext(1)
 [ INFO] (main) | onNext(1)
 Received : 1
@@ -352,7 +353,7 @@ Received : 7
 [ INFO] (main) | onNext(8)
 [ INFO] (main) | onNext(8)
 Received : 8
-[ INFO] (main) | request(8)
+[ INFO] (main) | request(8)		->
 [ INFO] (main) | onNext(9)
 [ INFO] (main) | onNext(9)
 Received : 9
@@ -377,7 +378,7 @@ Received : 15
 [ INFO] (main) | onNext(16)
 [ INFO] (main) | onNext(16)
 Received : 16
-[ INFO] (main) | request(8)
+[ INFO] (main) | request(8)		->
 [ INFO] (main) | onNext(17)
 [ INFO] (main) | onNext(17)
 Received : 17
@@ -463,13 +464,28 @@ flatMap:
 	Transform the elements emitted by this Flux asynchronously into Publishers,
 	then flatten these inner publishers into a single Flux through merging,which allow them to interleave. 
 
-	This will internally subscribes to all the publishers and flattens the result and send it to downstreams
+	There are three dimensions to this operator that can be compared with flatMapSequential and concatMap: 
+		•Generation of inners and subscription: this operator is eagerlysubscribing to its inners.
+		•Ordering of the flattened values: this operator does not necessarily preserveoriginal ordering, as inner element are flattened as they arrive.
+		•Interleaving: this operator lets values from different inners interleave(similar to merging the inner sequences).
+
+	Discard Support: This operator discards elements internally queued for backpressure upon cancellation or error triggered by a data signal.
+
 
 
 concatMap:
 ------------------------------------------------------
 	Transform the elements emitted by this Flux asynchronously into Publishers,
-	then flatten these inner publishers into a single Flux, sequentially and preserving order using concatenation. 
+	then flatten these inner publishers into a single Flux, sequentially andpreserving order using concatenation. 
+
+	There are three dimensions to this operator that can be compared with flatMap and flatMapSequential: 
+		•Generation of inners and subscription: this operator waits for oneinner to complete before generating the next one and subscribing to it.
+		•Ordering of the flattened values: this operator naturally preserves the same order as the source elements, concatenating the inners from each sourceelement sequentially.
+		•Interleaving: this operator does not let values from different innersinterleave (concatenation).
+
+	Errors will immediately short circuit current concat backlog. 
+
+	Discard Support: This operator discards elements it internally queued for backpressure upon cancellation. 
 	
 	
 /*
@@ -483,3 +499,26 @@ concatMap:
 *  Sync in nature
 *  Ordering maintains and it takes time to complete due to ordering maintaining
 * */
+
+
+
+
+Flux.range:	Flux<Integer> reactor.core.publisher.Flux.range(int start, int count)
+------------------------------------------------------
+	Build a Flux that will only emit a sequence of count incrementing integers,starting from start. 
+	That is, emit integers between start (included)and start + count (excluded) then complete. 
+
+
+	Parameters:	start the first integer to be emit
+				count the total number of incrementing values to emit, including the first value
+				
+				
+
+Flux.interval:	Flux<Long> reactor.core.publisher.Flux.interval(Duration period)
+------------------------------------------------------
+	Create a Flux that emits long values starting with 0 and incrementing atspecified time intervals on the global timer. 
+	The first element is emitted afteran initial delay equal to the period. 
+	If demand is not produced in time,an onError will be signalled with an overflow IllegalStateException detailing the tick that couldn't be emitted.
+	In normal conditions, the Flux will never complete. 
+
+	Runs on the Schedulers.parallel() Scheduler.

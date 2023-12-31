@@ -7,9 +7,9 @@ import reactor.core.publisher.Mono;
 public class Lec06OnError {
 
     public static void main(String[] args) {
-    	 errorReturn();
-    	// errorResume();
-//    	errorContinue();
+//    	 errorReturn();
+//    	 errorResume();
+    	errorContinue();
     }
 
     private static Mono<Integer> fallback(){
@@ -39,7 +39,7 @@ public class Lec06OnError {
                 .log()
                 .map(i -> 10 / (5 - i))
                 .onErrorContinue((err, obj) -> {
-                	throw new RuntimeException(err.getMessage()+", Rethrown from onErrorContinue");
+                	//throw new RuntimeException(err.getMessage()+", Rethrown from onErrorContinue:"+obj);
                 })
                 .subscribe(Util.subscriber());
     }

@@ -1,0 +1,113 @@
+		Design Patterns:
+		---------------
+
+Integration Patterns:
+	Gateway Aggregator Pattern
+	Scatter Gather Pattern
+	Orchestrator Pattern (Parallel Workflow)
+	Orchestrator Pattern (Sequential Workflow)
+	Splitter Pattern
+	
+
+Resilient Patterns:
+	Timeout Pattern
+	Retry Pattern
+	Circuit Breaker Pattern
+	Rate Liimiter Pattern
+	Bulkhead Pattern
+	
+	
+	
+1) Gateway Aggregator Pattern:
+-----------------------------------------
+	A separate microservice whose job is receive the request from the client and calls all the upstream services, collect the information and send it back to the client.
+	
+	It hides all the backend complexities and acts as proxy for facade
+	
+	Amazon Product dashboard:
+	--------------------------
+	
+						review service
+						
+						product service
+	Client  	->				
+						promotions service
+						
+						pricing service
+						
+						
+	Adv:
+		Reduce More network calls	
+		Reduce latency
+		Avoid the complex aggregation logic in the front end
+		Browser has limit on the parallel calls (6) for a domain and we can avoid this using aggregator service
+		
+		
+	java -jar external-services-v2.jar --server.port=7070
+	java -jar external-services-v2.jar --server.port=7070 --sec01.delay.response=3000 -> to delay the response - to create 3s latency
+	http://localhost:7070/swagger-ui/
+
+
+	
+
+						review service
+						
+	Client  	->		product service
+					
+						promotions service
+	
+	If product service is core service, even review and promotions are down, we can still provide response with produc information.
+	But if product is down, it will not help the user.
+	
+	
+	
+2) Scatter Gather Pattern
+-----------------------------------------
+	It is also an aggregator pattern for specific use case.
+	Broadcasts the message to all the recipients and then collects the response
+	
+	
+	
+3) Orchestrator Pattern (Parallel Workflow)
+-----------------------------------------
+	Aggregator + additional business logic
+	
+	
+	In order to place an order successfully, the order service recieve an order request form client, the order service sneds to requests to different srevices like
+	
+	product service - to check the product to be present
+	payment service - to check the user is having enough balance
+	inventory service - to check the product item is available in the inventory
+	shipping service - to check the product shipping is ready to shipped
+	
+	If they all success the order is successfull else the order gets failed.
+	If order failed because of any problem in any of above services, then the below respective actions to be taken
+	
+	Instead of having those co-ordination logic in order service, we can separate them out of order service and  implement the co-ordination logic
+	as a separate orchestra service to handle those additional business logic
+
+																						product-service
+																						
+																						payment-service																				
+	Order service (do some basic validation)	-> Orchestrator Service 		->
+												  (Handle below co-ordination logic)	inventory-service
+																						
+																						shipping-service
+
+
+Service Orchestrator:
+	product-service			payment-service			inventory-service			shipping-service			Order-Status			Orchestrator actions
+	-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+	Success					Success					Success						Success						Success
+	-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+	404																																404
+	-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+	Success					Failed					Success						Success						Failed					restore inventory, cancel shipping-service
+	-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+	Success 				Success					Failed						Success						Failed					refund user, cancel shipping
+	-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+	Success					Success					Success						Failed						Failed					refund user, restore shipping
+	-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+	
+	
+	

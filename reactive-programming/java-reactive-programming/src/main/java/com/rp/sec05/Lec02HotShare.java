@@ -19,6 +19,7 @@ public class Lec02HotShare {
 
         Util.sleepSeconds(5);
 
+        // -- late subscribe miss items here
         movieStream
                 .subscribe(Util.subscriber("mike"));
 

@@ -18,6 +18,7 @@ public class Lec01ColdPublisher {
 
         Util.sleepSeconds(5);
 
+        // -- late subscribe but dont miss items here
         movieStream
                 .subscribe(Util.subscriber("mike"));
 

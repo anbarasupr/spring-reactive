@@ -30,7 +30,7 @@ share :	Flux<String> reactor.core.publisher.Flux.share()
 		whoever connects at that time or after first 1 subscriber, they get the same shared data and
 		late subscribers might therefore miss items
 		
-		if all the items emitted/cancelled,  the refCount becomes 0. If any one joins again, the refCount becomes  and the same above process continues again.
+		if all the items emitted/cancelled,  the refCount becomes 0. If any one joins again, the refCount becomes 1 and the same above process continues again.
 		
 
 publish: ConnectableFlux<String> reactor.core.publisher.Flux.publish()
@@ -51,7 +51,7 @@ autoConnect: Flux<String> reactor.core.publisher.ConnectableFlux.autoConnect(int
 -----------------------------------------------------------------------------------------------		
 	Connects this ConnectableFlux to the upstream source when the specified amount of org.reactivestreams.Subscriber subscribes. 
 
-	Subscribing and immediately unsubscribing still contributes to the counter thattriggers the connection. 
+	Subscribing and immediately unsubscribing still contributes to the counter that triggers the connection. 
 
 	autoConnect(1) :
 		The publisher starts produces data when atleast one subscriber connects and do not wait for others.
@@ -78,7 +78,7 @@ cache:	Flux<String> reactor.core.publisher.Flux.cache(int history)
 	Note that cache(0) will only cache the terminal signal without expiration. 
 	
 	As soon as items are emitted, the items are cached and we adjust the value to how many to cache.
-	When new subscribers joined, the cacheddata is replyed and it will be very fast
+	When new subscribers joined, the cached data is repalyed and it will be very fast
 
 
 

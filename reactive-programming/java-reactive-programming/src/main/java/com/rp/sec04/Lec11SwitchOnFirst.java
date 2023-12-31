@@ -12,7 +12,7 @@ public class Lec11SwitchOnFirst {
 
         getPerson()
                 .switchOnFirst((signal, personFlux) -> {
-                    System.out.println("inside switch-on-first");
+                    System.out.println("inside switch-on-first:"+signal.isOnNext());
                     return signal.isOnNext() && signal.get().getAge() > 10 ? personFlux : applyFilterMap().apply(personFlux);
                 })
                 // .transform(applyFilterMap())
@@ -27,8 +27,8 @@ public class Lec11SwitchOnFirst {
 
     public static Function<Flux<Person>, Flux<Person>> applyFilterMap(){
         return flux -> flux
-                .filter(p -> p.getAge() > 10)
-                .doOnNext(p -> p.setName(p.getName().toUpperCase()))
+                .filter(p -> p.getAge() > 5)
+                .doOnNext(p -> p.setName(p.getName().toUpperCase()+"_TEST"))
                 .doOnDiscard(Person.class, p -> System.out.println("Not allowing Usable Pipeline: " + p));
     }
 

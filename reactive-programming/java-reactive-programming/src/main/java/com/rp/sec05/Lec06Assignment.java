@@ -9,6 +9,11 @@ public class Lec06Assignment {
 
     public static void main(String[] args) {
 
+    	/*
+    	 * OrderService - generating the purchase orders for various category products
+    	 * InventoryService - Monitors the inventory for Kids and Automotive product categories
+    	 * RevenueService - Monitors the revenue generated for Kids and Automotive product categories
+    	 * */
         OrderService orderService = new OrderService();
         RevenueService revenueService = new RevenueService();
         InventoryService inventoryService = new InventoryService();
@@ -18,7 +23,6 @@ public class Lec06Assignment {
         orderService.orderStream().subscribe(inventoryService.subscribeOrderStream());
 
         inventoryService.inventoryStream()
-
                 .subscribe(Util.subscriber("inventory"));
 
         revenueService.revenueStream()

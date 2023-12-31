@@ -24,7 +24,7 @@ public class Lec05HotPublishCache {
         Util.sleepSeconds(10);
 
         System.out.println("Mike is about to join");
-
+        // new subscribers - cached data replayed to mike and it is fast
         movieStream
                 .subscribe(Util.subscriber("mike"));
 
