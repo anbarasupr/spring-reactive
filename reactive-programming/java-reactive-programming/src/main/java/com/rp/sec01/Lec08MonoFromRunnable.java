@@ -7,7 +7,7 @@ public class Lec08MonoFromRunnable {
 
     public static void main(String[] args) {
 
-
+    	// Create a Mono that completes empty once the provided Runnable has been executed. 
         Mono.fromRunnable(timeConsumingProcess())
                 .subscribe(Util.onNext(),
                         Util.onError(),

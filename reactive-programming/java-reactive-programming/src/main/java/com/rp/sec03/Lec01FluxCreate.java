@@ -21,10 +21,13 @@ public class Lec01FluxCreate {
             String country;
             do{
                 country = Util.faker().country().name();
+                System.out.println("fluxSink emitting country "+country);
                 fluxSink.next(country);
             }while (!country.toLowerCase().equals("canada"));
             fluxSink.complete();
         })
+        // If downstream system (subscriber) is  cancelled, then flux sink should not emit data and it has to be handled by developer.
+        .take(3)
         .subscribe(Util.subscriber());
 
 

@@ -14,7 +14,7 @@ public class Lec04FluxCreateIssueFix {
             int counter = 0;
             do{
                 country = Util.faker().country().name();
-                System.out.println("emitting : " + country);
+                System.out.println("emitting : -- " + country);
                 fluxSink.next(country);
                 counter++;
             }while (!country.toLowerCase().equals("canada") && !fluxSink.isCancelled() && counter < 10);

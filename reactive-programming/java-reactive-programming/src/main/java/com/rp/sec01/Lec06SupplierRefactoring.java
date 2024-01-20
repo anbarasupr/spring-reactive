@@ -9,8 +9,8 @@ public class Lec06SupplierRefactoring {
 	public static void main(String[] args) {
 
 //		executeNone();
-		executeBlocking();
-//		executeNonBlocking();
+//		executeBlocking();
+		executeNonBlocking();
 //		executeBlockingV1();
 	}
 

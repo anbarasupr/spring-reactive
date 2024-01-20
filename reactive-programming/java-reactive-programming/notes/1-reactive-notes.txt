@@ -19,9 +19,21 @@ Java Streams / Reactive Streams are lazy:
 
 Subscribe Paramters:
 ------------------------------------------------------
-	onNext(Consumer<T>)
-	onError(Consumer<Throwable>)
-	onComplete(Runnable)		-- doesnt accept any paramter and doesnt return any.
+	onNext(Consumer<T>) 			consumer
+	onError(Consumer<Throwable>)	errorConsumer
+	onComplete(Runnable)			completeConsumer 	-- doesnt accept any paramter and doesnt return any.
+
+Subscribe Consumer to this Mono that will respectively consume all the elements in the sequence, handle errors and react to completion. 
+The subscription will request unbounded demand (Long.MAX_VALUE). 
+For a passive version that observe and forward incoming data see doOnSuccess(Consumer) and doOnError(java.util.function.Consumer). 
+
+Keep in mind that since the sequence can be asynchronous, this will immediately return control to the calling thread. 
+This can give the impression the consumer is not invoked when executing in a main thread or a unit test for instance. 
+
+
+Parameters:	consumer the consumer to invoke on each value 
+			errorConsumer the consumer to invoke on error signal 
+			completeConsumer the consumer to invoke on complete signalReturns:a new Disposable that can be used to cancel the underlying Subscription
 
 
 callable vs runnable vs future in java:
@@ -61,7 +73,7 @@ Flux.create : <T> Flux<T> create(Consumer<? super FluxSink<T>> emitter
 	
 	
 Flux.generate:  <T> Flux<T> generate(Consumer<SynchronousSink<T>> generator) 
-	Programmatically create a Flux by generating signals one-by-one via a consumer callback and some state. The stateSupplier may return null.
+	Programmatically create a Flux by generating signals one-by-one via a consumer callback and some state. The state Supplier may return null.
 	
 	using SynchronousSink in generate, only one element can be emitted
 	
@@ -69,11 +81,25 @@ Flux.generate:  <T> Flux<T> generate(Consumer<SynchronousSink<T>> generator)
 	
 	If downstream system (subscriber) is  cancelled, then SynchronousSink will not emit data which is handled by it
 	
+
+Flux.generate with state supplier:
+	Programmatically create a Flux by generating signals one-by-one via aconsumer callback and some state, with a final cleanup callback. 
+	The stateSupplier may return null but your cleanup stateConsumer will need to handle the null case. 
+
+	Parameters:
+		stateSupplier called for each incoming Subscriber to provide the initial state for the generator bifunction 
+		
+		generator Consume the SynchronousSink provided per-subscriber by Reactor as well as the current state 
+		to generate a single signal on each pass and return a (new) state.
+		
+		stateConsumer called after the generator has terminated or the downstream cancelled, 
+		receiving the last state to be handled (i.e., release resources or do other cleanup).
+		
+		
 	
 Flux.push: Flux<T> push(Consumer<? super FluxSink<T>> emitter
 	Programmatically create a Flux with the capability of emitting multiple elements from a single-threaded producer through the FluxSink API. 
 	For a multi-threaded capable alternative, see Flux.create(Consumer). 
-	
 	
 	
 	
@@ -130,7 +156,7 @@ doFirst:	Flux<Object> reactor.core.publisher.Flux.doFirst(Runnable onFirst)
 	Add behavior (side-effect) triggered before the Flux is subscribed to, which should be the first event after assembly time
 	
 	Note that when several doFirst(Runnable) operators are used anywhere in a chain of operators, 
-	their order of execution is reversed compared to the declarationorder 
+	their order of execution is reversed compared to the declaration order 
 	(as subscribe signal flows backward, from the ultimate subscriber to the source publisher)
 	
 	
@@ -179,7 +205,7 @@ doOnTerminate:	The Runnable is executed first, then the onComplete signal is pro
 
 doOnError:	Flux<Object> reactor.core.publisher.Flux.doOnError(Consumer<? super Throwable> onError)
 	Add behavior (side-effect) triggered when the Flux completes with an error. 
-	The Consumer is executed first, then the onError signal is propagateddownstream.
+	The Consumer is executed first, then the onError signal is propagated downstream.
 
 
 doFinally: Flux<Object> reactor.core.publisher.Flux.doFinally(Consumer<SignalType> onFinally)
@@ -207,7 +233,7 @@ doOnCancel: 	Flux<Object> reactor.core.publisher.Flux.doOnCancel(Runnable onCanc
 doOnDiscard: <Object> Flux<Object> reactor.core.publisher.Flux.doOnDiscard(Class<Object> type, Consumer<? super Object> discardHook)
 	Potentially modify the behavior of the whole chain of operators upstream of this one to conditionally clean up elements that get discarded by these operators. 
 
-	The discard Hook MUST be idempotent and safe to use on any instance of the desired type .Calls to this method are additive, 
+	The discard Hook MUST be idempotent and safe to use on any instance of the desired type. Calls to this method are additive, 
 	and the order of invocation of the discard Hook is the same as the order of declaration (calling .filter(...).doOnDiscard(first).doOnDiscard(second)
 	will let the filter invoke first then second handlers). 
 
@@ -402,17 +428,63 @@ delayElements:
 	reactor.util.concurrent.Queues - Class defines Min 8 and Max 32 items as default to emit when using delayElements
 	and it takes Max always which is 32 to emit.
 
-	To change the behaviour,  System.setProperty("reactor.bufferSize.x", "9");
+	To change the behaviour,  System.setProperty("reactor.bufferSize.x", "10");
 	
 	Here publisher emits 32 items as per request comes delayElements of Queue size and upon 75% draining, it will send subsequent request again which is 24 elements.
 	
-Flux.range(1, 100)  // 32
+Flux.range(1, 20)  // 32
 	.log()
 	.delayElements(Duration.ofSeconds(1))
 	.subscribe(Util.subscriber());
 	
 	
-	
+[ INFO] (main) | onSubscribe([Synchronous Fuseable] FluxRange.RangeSubscription)
+[ INFO] (main) | request(10)
+[ INFO] (main) | onNext(1)
+[ INFO] (main) | onNext(2)
+[ INFO] (main) | onNext(3)
+[ INFO] (main) | onNext(4)
+[ INFO] (main) | onNext(5)
+[ INFO] (main) | onNext(6)
+[ INFO] (main) | onNext(7)
+[ INFO] (main) | onNext(8)
+[ INFO] (main) | onNext(9)
+[ INFO] (main) | onNext(10)
+Received : 1
+Received : 2
+Received : 3
+Received : 4
+Received : 5
+Received : 6
+Received : 7
+[ INFO] (parallel-7) | request(8)
+[ INFO] (parallel-7) | onNext(11)
+[ INFO] (parallel-7) | onNext(12)
+[ INFO] (parallel-7) | onNext(13)
+[ INFO] (parallel-7) | onNext(14)
+[ INFO] (parallel-7) | onNext(15)
+[ INFO] (parallel-7) | onNext(16)
+[ INFO] (parallel-7) | onNext(17)
+[ INFO] (parallel-7) | onNext(18)
+Received : 8
+Received : 9
+Received : 10
+Received : 11
+Received : 12
+Received : 13
+Received : 14
+Received : 15
+[ INFO] (parallel-7) | request(8)
+[ INFO] (parallel-7) | onNext(19)
+[ INFO] (parallel-7) | onNext(20)
+[ INFO] (parallel-7) | onComplete()
+Received : 16
+Received : 17
+Received : 18
+Received : 19
+Received : 20
+Completed
+
 	
 onError:
 ------------------------------------------------------
@@ -456,7 +528,8 @@ Consider In a pipeline, we have some expectation.
 
 Ex: In order to proceed in this downstream pipeline, your data should be in particular format. only then we can do operations.
 We can put switchOnFirst on the top of pipeline and check the incoming data is in supported format or not to the downstream pipelines.
-If it is ok, then use the existing pipeline, else apply some transformation on it and use the pipeline
+If it is ok, then use the existing pipeline, else apply some transformation on it and use the existing pipeline
+If it is ok, then use the existing pipeline, else apply some transformation on it and use the existing pipeline
 
 
 flatMap:
@@ -465,8 +538,8 @@ flatMap:
 	then flatten these inner publishers into a single Flux through merging,which allow them to interleave. 
 
 	There are three dimensions to this operator that can be compared with flatMapSequential and concatMap: 
-		•Generation of inners and subscription: this operator is eagerlysubscribing to its inners.
-		•Ordering of the flattened values: this operator does not necessarily preserveoriginal ordering, as inner element are flattened as they arrive.
+		•Generation of inners and subscription: this operator is eagerly subscribing to its inners.
+		•Ordering of the flattened values: this operator does not necessarily preserve original ordering, as inner element are flattened as they arrive.
 		•Interleaving: this operator lets values from different inners interleave(similar to merging the inner sequences).
 
 	Discard Support: This operator discards elements internally queued for backpressure upon cancellation or error triggered by a data signal.
@@ -479,9 +552,9 @@ concatMap:
 	then flatten these inner publishers into a single Flux, sequentially andpreserving order using concatenation. 
 
 	There are three dimensions to this operator that can be compared with flatMap and flatMapSequential: 
-		•Generation of inners and subscription: this operator waits for oneinner to complete before generating the next one and subscribing to it.
-		•Ordering of the flattened values: this operator naturally preserves the same order as the source elements, concatenating the inners from each sourceelement sequentially.
-		•Interleaving: this operator does not let values from different innersinterleave (concatenation).
+		•Generation of inners and subscription: this operator waits for one inner to complete before generating the next one and subscribing to it.
+		•Ordering of the flattened values: this operator naturally preserves the same order as the source elements, concatenating the inners from each source element sequentially.
+		•Interleaving: this operator does not let values from different inners interleave (concatenation).
 
 	Errors will immediately short circuit current concat backlog. 
 
@@ -516,8 +589,8 @@ Flux.range:	Flux<Integer> reactor.core.publisher.Flux.range(int start, int count
 
 Flux.interval:	Flux<Long> reactor.core.publisher.Flux.interval(Duration period)
 ------------------------------------------------------
-	Create a Flux that emits long values starting with 0 and incrementing atspecified time intervals on the global timer. 
-	The first element is emitted afteran initial delay equal to the period. 
+	Create a Flux that emits long values starting with 0 and incrementing at specified time intervals on the global timer. 
+	The first element is emitted after an initial delay equal to the period. 
 	If demand is not produced in time,an onError will be signalled with an overflow IllegalStateException detailing the tick that couldn't be emitted.
 	In normal conditions, the Flux will never complete. 
 
