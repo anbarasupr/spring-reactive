@@ -15,6 +15,7 @@ public class Lec09FluxFromMono {
         System.out.println("-----");
 
         Flux.range(1, 10)
+        		.log()
                 .next() // 1 (Emit only the first item emitted by this Flux, into a new Mono)
                 .log()
                 .filter(i -> i > 0)

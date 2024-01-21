@@ -18,9 +18,7 @@ public class Lec05Delay {
                 .log()
                 .delayElements(Duration.ofSeconds(1))
                 .subscribe(Util.subscriber());
-
-
-
+        
         Util.sleepSeconds(60);
     }
 

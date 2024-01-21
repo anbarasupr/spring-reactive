@@ -33,7 +33,7 @@ Schdulers != Parallel Execution:
 
 parallel().runOn():	ParallelFlux<Integer> reactor.core.publisher.Flux.parallel(int parallelism)
 -----------------------------------------------------------------------------------------------
-	Prepare this Flux by dividing data on a number of 'rails' matching theprovided parallelism parameter, in a round-robin fashion. 
+	Prepare this Flux by dividing data on a number of 'rails' matching the provided parallelism parameter, in a round-robin fashion. 
 	Note that to actually perform the work in parallel, you should call ParallelFlux.runOn(Scheduler) afterward.
 	
 	

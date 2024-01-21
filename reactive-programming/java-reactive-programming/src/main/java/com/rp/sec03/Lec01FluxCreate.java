@@ -12,7 +12,7 @@ public class Lec01FluxCreate {
     		fluxSink.next(2);
     		fluxSink.next(3);
             fluxSink.complete();
-        })
+        })    	
         .subscribe(Util.subscriber());
     	
     	

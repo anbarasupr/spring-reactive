@@ -10,7 +10,7 @@ public class Lec05MonoFromSupplier {
 
     public static void main(String[] args) {
 
-        // use just only when you have data already
+       // use just only when you have data already
        // Mono<String> mono = Mono.just(getName());
 
         Supplier<String> stringSupplier = () -> getName();

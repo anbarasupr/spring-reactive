@@ -14,14 +14,14 @@ Overflow Strategy
 
 Strategy and its  Behaviour:
 	buffer		->		Keep in memory
-	drop		->		Once the queue is full, new items willbe dropped
+	drop		->		Once the queue is full, new items will be dropped
 	latest		->		Once the queue is full, keep 1 latest item as and when it arrives. drop old
 	error		->		throw error to the downstream
 	
 	
 buffer:
 -----------------------------------------------
-By default, buffer isthe back pressure startegy which is holding all the emiited items int he memory
+By default, buffer is the back pressure startegy which is holding all the emiited items in the memory
 
 
 drop:

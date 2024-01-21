@@ -15,14 +15,14 @@ public class Lec05PubSubOn {
             }
             fluxSink.complete();
         })
-                .doOnNext(i -> printThreadName("next " + i));
+        .doOnNext(i -> printThreadName("next " + i));
 
 
         flux
-                .publishOn(Schedulers.parallel())
-                .doOnNext(i -> printThreadName("next " + i))
-                .subscribeOn(Schedulers.boundedElastic())
-                .subscribe(v -> printThreadName("sub " + v));
+            .publishOn(Schedulers.parallel())
+            .doOnNext(i -> printThreadName("next " + i))
+            .subscribeOn(Schedulers.boundedElastic())
+            .subscribe(v -> printThreadName("sub " + v));
 
 
         Util.sleepSeconds(5);

@@ -19,6 +19,7 @@ Java Streams / Reactive Streams are lazy:
 
 Subscribe Paramters:
 ------------------------------------------------------
+	onSubscribe(Subscribe) 			consumer
 	onNext(Consumer<T>) 			consumer
 	onError(Consumer<Throwable>)	errorConsumer
 	onComplete(Runnable)			completeConsumer 	-- doesnt accept any paramter and doesnt return any.
@@ -31,7 +32,7 @@ Keep in mind that since the sequence can be asynchronous, this will immediately 
 This can give the impression the consumer is not invoked when executing in a main thread or a unit test for instance. 
 
 
-Parameters:	consumer the consumer to invoke on each value 
+Parameters:	nextConsumer the consumer to invoke on each value 
 			errorConsumer the consumer to invoke on error signal 
 			completeConsumer the consumer to invoke on complete signalReturns:a new Disposable that can be used to cancel the underlying Subscription
 
@@ -549,7 +550,7 @@ flatMap:
 concatMap:
 ------------------------------------------------------
 	Transform the elements emitted by this Flux asynchronously into Publishers,
-	then flatten these inner publishers into a single Flux, sequentially andpreserving order using concatenation. 
+	then flatten these inner publishers into a single Flux, sequentially and preserving order using concatenation. 
 
 	There are three dimensions to this operator that can be compared with flatMap and flatMapSequential: 
 		•Generation of inners and subscription: this operator waits for one inner to complete before generating the next one and subscribing to it.

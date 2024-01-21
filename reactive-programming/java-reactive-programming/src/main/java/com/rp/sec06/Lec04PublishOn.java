@@ -22,6 +22,7 @@ public class Lec04PublishOn {
                 .publishOn(Schedulers.boundedElastic())
                 .doOnNext(i -> printThreadName("next " + i))
                 .publishOn(Schedulers.parallel())
+                .doFirst(() -> printThreadName("first1"))
                 .subscribe(v -> printThreadName("sub " + v));
 
 

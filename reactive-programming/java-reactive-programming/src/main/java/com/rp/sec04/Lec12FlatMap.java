@@ -10,11 +10,9 @@ public class Lec12FlatMap {
 
     public static void main(String[] args) {
 
-        BufferedReader reader;
-
 
         UserService.getUsers()
-                .flatMap(user -> OrderService.getOrders(user.getUserId())) // mono / flux
+                .flatMap(user -> OrderService.getOrders(user.getUserId())) // mono // flux
                // .filter(p -> p > 10)
                 .log()
                 .subscribe(Util.subscriber());

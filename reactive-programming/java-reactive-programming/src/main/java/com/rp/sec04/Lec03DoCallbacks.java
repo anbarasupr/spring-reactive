@@ -16,6 +16,7 @@ public class Lec03DoCallbacks {
             // fluxSink.error(new RuntimeException("oops"));
              System.out.println("--fluxSink completed--");
         })
+        .doOnTerminate(() -> System.out.println("doOnTerminate 1"))
         .doOnComplete(() -> System.out.println("doOnComplete 1:"))
         .doFirst(() -> System.out.println("doFirst:"))
         .doFirst(() -> System.out.println("doAnotherFirst:"))
@@ -24,14 +25,16 @@ public class Lec03DoCallbacks {
         .doOnSubscribe(s -> System.out.println("doOnSubscribe 1: " + s))
         .doOnRequest(l -> System.out.println("doOnRequest 2: " + l))
         .doOnError(err -> System.out.println("doOnError : " + err.getMessage()))
-        .doOnTerminate(() -> System.out.println("doOnTerminate"))
+        .doOnTerminate(() -> System.out.println("doOnTerminate 2"))
         .doOnSubscribe(s -> System.out.println("doOnSubscribe 2: " + s))
         .doOnCancel(() -> System.out.println("doOnCancel"))
         .doFinally(signal -> System.out.println("doFinally 1 : " + signal))
         .doFinally(signal -> System.out.println("doFinally 2 : " + signal))
         .doOnDiscard(Object.class, o -> System.out.println("doOnDiscard : " + o))
+        .doOnTerminate(() -> System.out.println("doOnTerminate 3"))
         // .take(2)
         .doOnComplete(() -> System.out.println("doOnComplete 2:"))
+        .doOnTerminate(() -> System.out.println("doOnTerminate 4"))
         .doFinally(signal -> System.out.println("doFinally 3 : " + signal))
         .subscribe(Util.subscriber("Subscriber"));
 

@@ -13,8 +13,8 @@ public class Lec05HotPublishCache {
         // cache = publish().replay() int.max
         Flux<String> movieStream = Flux.fromStream(() -> getMovie())
                 .delayElements(Duration.ofSeconds(1))
-                .cache(); //cache all items
-                //.cache(2); //cache last two items
+                // .cache(); // cache all items
+                .cache(2); //cache last two items
 
         Util.sleepSeconds(2);
 

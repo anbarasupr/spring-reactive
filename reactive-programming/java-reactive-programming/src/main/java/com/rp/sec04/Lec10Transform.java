@@ -9,7 +9,6 @@ import java.util.function.Function;
 public class Lec10Transform {
 
     public static void main(String[] args) {
-
             getPerson()
                     .transform(applyFilterMap())
                     .subscribe(Util.subscriber());
@@ -26,7 +25,4 @@ public class Lec10Transform {
                             .doOnNext(p -> p.setName(p.getName().toUpperCase()))
                             .doOnDiscard(Person.class, p -> System.out.println("Not allowing : " + p));
     }
-
-
-
 }
