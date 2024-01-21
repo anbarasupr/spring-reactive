@@ -15,7 +15,7 @@ public class Lec02Concat {
 //        flux0.subscribe(Util.subscriber());
         
 
-        Flux<String> flx = Flux.concat(flux1, flux2, flux3); // if any error signal is produced ny any offlux, then concat operation there
+        Flux<String> flx = Flux.concat(flux1, flux2, flux3); // if any error signal is produced by any of flux, then concat operation there
         flx.subscribe(Util.subscriber());
         
         Flux<String> flux = Flux.concatDelayError(flux1, flux2, flux3);

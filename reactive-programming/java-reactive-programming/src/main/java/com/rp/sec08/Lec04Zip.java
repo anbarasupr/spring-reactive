@@ -13,17 +13,17 @@ public class Lec04Zip {
 
     private static Flux<String> getBody(){
         return Flux.range(1, 5)
-                .map(i -> "body");
+                .map(i -> "body:"+i);
     }
 
     private static Flux<String> getEngine(){
         return Flux.range(1, 3)
-                .map(i -> "engine");
+                .map(i -> "engine:"+i);
     }
 
     private static Flux<String> getTires(){
         return Flux.range(1, 6)
-                .map(i -> "tires");
+                .map(i -> "tires:"+i);
     }
 
 

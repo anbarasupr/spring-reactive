@@ -35,6 +35,7 @@ public class Lec02Drop {
 
         Util.sleepSeconds(10);
         System.out.println(list); //list contains dropped data by back pressure
+        System.out.println(list.size());
 
     }
 
