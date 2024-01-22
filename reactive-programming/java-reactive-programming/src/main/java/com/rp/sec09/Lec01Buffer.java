@@ -12,9 +12,9 @@ public class Lec01Buffer {
         // eventStream()
         takeEventStream()
         		// .buffer(5) //collect 5 items and give back
-        		.buffer(Duration.ofSeconds(2)) // collect the items for the 2 seconds window time and give back
-                // .bufferTimeout(5, Duration.ofSeconds(2)) 
-        		// Either collect 5 items or whatever the items that it got in the window time and five back. whichever finish first, it will take precedence either window time or no of items
+//        		.buffer(Duration.ofSeconds(2)) // collect the items for the 2 seconds window time and give back
+                 .bufferTimeout(5, Duration.ofSeconds(2)) 
+        		// Either collect 5 items or whatever the items that it got in the window time and give back. whichever finish first, it will take precedence either window time or no of items
                 .subscribe(Util.subscriber());
 
         Util.sleepSeconds(60);

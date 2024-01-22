@@ -45,7 +45,7 @@ public class Lec04AssertTest {
         		// this will not wait for 3 secs and assume it has waited to complete
         
         /*
-         * Consider the assertion is having 3 sec delayElement and the StepVerifier doesnot requiredto wait for 3 sec to complete
+         * Consider the assertion is having 3 sec delayElement and the StepVerifier does not required to wait for 3 sec to complete
          * To avoid waiting in test cases, we can set the test case to assume that it has waited for some duration and execute
          * To do the waiting assumption, use verify(Duration.ofSeconds(4))
          * */

@@ -33,7 +33,7 @@ public class Lec04RetryWhenAdvanced {
                              System.out.println("failure: "+rs.failure());
                          })
                          .handle((rs, synchronousSink) -> { // filter + map
-                             if(rs.failure().getMessage().equals("500"))
+                             if(rs.failure().getMessage().contains("500"))
                                  synchronousSink.next(1); // whenever it emits, it consider that as a signal to retry
                              else
                                  synchronousSink.error(rs.failure());
@@ -55,9 +55,9 @@ public class Lec04RetryWhenAdvanced {
     private static void processPayment(String ccNumber){
         int random = Util.faker().random().nextInt(1, 10);
         if(random < 8)
-            throw new RuntimeException("500");
+            throw new RuntimeException("500-Error");
         else if(random < 10)
-            throw new RuntimeException("404");
+            throw new RuntimeException("404-Error");
     }
 
 }

@@ -55,11 +55,11 @@ Sinks.many().multicast().directAllOrNothing() : Disable history
 	A Sinks.Many with the following characteristics: 
 		•Multicast
 		•Without Subscriber: fail fast on tryEmitNext.
-		•Backpressure : notify the caller with EmitResult.FAIL_OVERFLOW if any of the subscriberscannot process an element,
+		•Backpressure : notify the caller with EmitResult.FAIL_OVERFLOW if any of the subscribers cannot process an element,
 		failing fast and backing off from emitting the element at all (all or nothing).
 		From the perspective of subscribers, data is dropped and never seen but they are not terminated. 
 		•Replaying: No replay of elements. Only forwards to a Subscriber the elements thathave been pushed to the sink AFTER this subscriber was subscribed,
-		provided all of the subscribershave demand.
+		provided all of the subscribers have demand.
 
 
 	Type Parameters:<T> the type of elements to emitReturns:a multicast Sinks.Many that "drops" in case any subscriber is too slow
@@ -69,9 +69,9 @@ Sinks.many().multicast().directBestEffort();
 	A Sinks.Many with the following characteristics: 
 	•Multicast
 	•Without Subscriber: fail fast on tryEmitNext.
-	•Backpressure : notify the caller with EmitResult.FAIL_OVERFLOW if noneof the subscribers can process an element. 
+	•Backpressure : notify the caller with EmitResult.FAIL_OVERFLOW if none of the subscribers can process an element. 
 	Otherwise, it ignores slow subscribers and emits the element to fast ones as a best effort. From the perspective of slow subscribers, 
-	data is droppedand never seen, but they are not terminated. 
+	data is dropped and never seen, but they are not terminated. 
 	•Replaying: No replay of elements. Only forwards to a Subscriber the elements thathave been pushed to the sink AFTER this subscriber was subscribed.
 
 

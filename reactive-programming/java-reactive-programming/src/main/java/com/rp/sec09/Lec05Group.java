@@ -9,7 +9,6 @@ public class Lec05Group {
 
     public static void main(String[] args) {
 
-
         Flux.range(1, 30)
                 .delayElements(Duration.ofSeconds(1))
                 .groupBy(i -> i % 2)  // key 0, 1 based on whatever it returns, it is considered as a key to group and type return is GroupedFlux

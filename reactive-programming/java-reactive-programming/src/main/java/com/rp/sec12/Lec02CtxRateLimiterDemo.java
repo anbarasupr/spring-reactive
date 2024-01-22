@@ -14,7 +14,7 @@ public class Lec02CtxRateLimiterDemo {
         BookService.getBook()
                 .repeat(3) // first time and  3 repeats so totally 4 execution
                 .contextWrite(UserService.userCategoryContext())
-                .contextWrite(Context.of("user", "sam"))
+                .contextWrite(Context.of("user", "mike"))
                 .subscribe(Util.subscriber());
     }
 

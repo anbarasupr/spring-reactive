@@ -14,8 +14,8 @@ public class Lec04Window {
     public static void main(String[] args) {
 
         eventStream()
-        		.window(Duration.ofSeconds(1))
-                //.window(3) //as and when something comes, it is given to next pipeline until window time instead of collecting a list and giving after like buffer
+//        		.window(Duration.ofSeconds(1))
+                 .window(3) //as and when something comes, it is given to next pipeline until window time instead of collecting a list and giving after like buffer
                 //.flatMap(flux -> saveEvents(flux))
                 .flatMap(flux -> saveEventsFluxReturn(flux))
                 .subscribe(Util.subscriber());

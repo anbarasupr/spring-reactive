@@ -16,7 +16,7 @@ public class Lec03Assignment {
     public static void main(String[] args) {
     	
     	/*
-    	 * Subscriber calculating the revenue of ach categories
+    	 * Subscriber calculating the revenue of each categories
     	 * Publisher emitting multiple orders of book
     	 * */
 

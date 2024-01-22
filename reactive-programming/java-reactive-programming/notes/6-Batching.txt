@@ -34,23 +34,24 @@ Buffer:	Flux<List<String>> reactor.core.publisher.Flux.buffer(int maxSize)
 window	
 ----------------------------------------
 window(Duration.ofSeconds(2)):	Flux<Flux<String>> reactor.core.publisher.Flux.window(Duration windowingTimespan)
-	As and when something comes, it is given to next pipeline until window time instead of collecting in a list and giving after like buffer	
+	As and when something comes, it is given to next pipeline until window time instead of collecting in a list and giving after like buffer 
 	
 	It opens a 2sec window, create a flux and publish the incoming elements when it arrives and close the flux once window closed
 	
-	Split this Flux sequence into continuous, non-overlapping windows that openfor a windowingTimespan Duration (as measured on the parallelScheduler). 
+	Split this Flux sequence into continuous, non-overlapping windows that open for a windowingTimespan Duration (as measured on the parallelScheduler). 
 	
 		
 window(3): Flux<Flux<String>> reactor.core.publisher.Flux.window(int maxSize)
 	Split this Flux sequence into multiple Flux windows containing maxSize elements 
 	(or less for the final window) and starting from the first item. Each Flux window will onComplete after maxSize items have been routed. 
+
 	
 group
 ----------------------------------------
 	group the items by some property.
 	Ex; group the balls based on color and each color balls are published as a Flux 
 
-.groupBy(i -> i % 2) 	// key 0, 1 based on whatever it returns, it is considered as a key to group
+.groupBy(i -> i % 2) 	// key 0, 1 based on whatever it returns, it is considered as a key to group and type return is GroupedFlux
 
 
 
@@ -60,5 +61,7 @@ group
 then(): <Integer> Mono<Integer> reactor.core.publisher.Flux.then(Mono<Integer> other)
 	Let this Flux complete then play signals from a provided Mono. 
 
-	In other words ignore element from this Flux and transform its completion signal into theemission and completion signal of a provided Mono<V>. 
-	Error signal isreplayed in the resulting Mono<V>. 
+	In other words ignore element from this Flux and transform its completion signal into the emission and completion signal of a provided Mono<V>. 
+	Error signal is replayed in the resulting Mono<V>. 
+	
+	

@@ -10,4 +10,24 @@ Context:
 	
 	
 	
-	
+	Create a Mono provider that will supply a target Monoto subscribe to for each Subscriber downstream.
+	This operator behaves the same way as defer(Supplier), 	but accepts a Function that will receive the current ContextView as an argument. 
+
+
+	Type Parameters:
+		<T> the element type of the returned Mono instance
+
+	Parameters:
+		contextualMonoFactory a Mono factory
+		
+	Returns:
+		a deferred Mono deriving actual Mono from context values for each subscription
+		
+		
+	Mono.deferContextual(ctx -> {
+		if(ctx.hasKey("user")){
+			return Mono.just("Welcome  " + ctx.get("user"));
+		}else{
+			return Mono.error(new RuntimeException("unauthenticated"));
+		}
+	});

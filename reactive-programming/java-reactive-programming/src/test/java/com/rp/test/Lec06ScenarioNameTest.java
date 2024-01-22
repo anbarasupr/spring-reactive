@@ -13,10 +13,10 @@ public class Lec06ScenarioNameTest {
         Flux<String> flux = Flux.just("a", "b", "c");
 
         StepVerifierOptions scenarioName = StepVerifierOptions.create().scenarioName("alphabets-test"); 
-        // give the scenario name to identify the test name helpful in failing in which scenario it isfailed
+        // give the scenario name to identify the test name helpful in failing in which scenario it is failed
 
         StepVerifier.create(flux, scenarioName)
-                .expectNextCount(12)
+                .expectNextCount(12) // 3
                 .verifyComplete();
 
 

@@ -7,6 +7,7 @@ import reactor.core.publisher.Sinks.EmitResult;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 import java.util.concurrent.CompletableFuture;
 
 public class Lec03SinkThreadSafety {
@@ -20,9 +21,9 @@ public class Lec03SinkThreadSafety {
         // handle through which subscribers will receive items
         Flux<Object> flux = sink.asFlux();
         List<Object> list = new ArrayList<>();
-
-        flux.subscribe(list::add);
-
+        Vector<Object> vector = new Vector<>();
+//        flux.subscribe(list::add);
+        flux.subscribe(vector::add);
 //        for (int i = 0; i < 1000; i++) {
 //            final int j = i;
 //            CompletableFuture.runAsync(() -> {
@@ -31,7 +32,7 @@ public class Lec03SinkThreadSafety {
 //        }
 
         
-        //below is thread safe and handle callback will retry if any failure
+        //below is thread safe and handle callback with retry if any failure
         for (int i = 0; i < 1000; i++) {
             final int j = i;
             CompletableFuture.runAsync(() -> {
@@ -41,6 +42,10 @@ public class Lec03SinkThreadSafety {
 
         Util.sleepSeconds(3);
         System.out.println(list.size());
+        System.out.println(list);
+        
+        System.out.println(vector.size());
+        System.out.println(vector);
 
 
     }

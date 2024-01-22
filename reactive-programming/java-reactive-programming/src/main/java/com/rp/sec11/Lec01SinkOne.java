@@ -35,8 +35,7 @@ public class Lec01SinkOne {
         mono.subscribe(Util.subscriber("mike"));
         
         sink.emitValue("hi", (signalType, emitResult) -> {
-	        System.out.println(signalType.name());
-	        System.out.println(emitResult.name());
+	        System.out.println("signalType: "+signalType.name()+", value: "+emitResult.name());
 	        return false; // required retry or not
 	    });
 
