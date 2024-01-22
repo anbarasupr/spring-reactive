@@ -4,7 +4,7 @@
 Jedis 
 	Fast but not Thread safe and not scalable
 
-lettuce:
+Lettuce:
 	Scalable and supports reactive streams
 	Works Spring data redis
 	
@@ -12,11 +12,67 @@ Redission:
 	Scalable and supports reactive streams
 	Works Spring data redis
 	Excellent abstraction and has corresponding equivalent java collections
+
 	
-	
+Exaples:
+-----------------------------------------------------------------
+RBucketReactive:
+--------------------
+RBucketReactive<String> bucket = this.client.getBucket("user:1:name", StringCodec.INSTANCE);
+Mono<Void> set = bucket.set("sam");
+Mono<Void> set = bucket.set("sam", 10, TimeUnit.SECONDS);
+Mono<Void> get = bucket.get().doOnNext(System.out::println).then();
+
+
+RBucketReactive<Student> bucket = this.client.getBucket("student:1", new TypedJsonJacksonCodec(Student.class));
+
+
+RAtomicLongReactive:
+--------------------
+RAtomicLongReactive atomicLong = this.client.getAtomicLong("user:1:visit");
+
+
+RMapReactive:
+--------------------
+// Map<Integer, Student>
+TypedJsonJacksonCodec codec = new TypedJsonJacksonCodec(Integer.class, Student.class);
+RMapReactive<Integer, Student> map = this.client.getMap("users", codec);
+Student student1 = new Student("sam", 10, "atlanta", List.of(1, 2, 3));
+Mono<Student> mono1 = map.put(1, student1);
+
+
+RMapCacheReactive:
+--------------------
+// Map<Integer, Student>
+TypedJsonJacksonCodec codec = new TypedJsonJacksonCodec(Integer.class, Student.class);
+RMapCacheReactive<Integer, Student> mapCache = this.client.getMapCache("users:cache", codec);
+Student student1 = new Student("sam", 10, "atlanta", List.of(1, 2, 3));
+Mono<Student> st1 = mapCache.put(1, student1, 5, TimeUnit.SECONDS);
+
+// access students
+mapCache.get(1).doOnNext(System.out::println).subscribe();
+
+
+RLocalCachedMap:
+--------------------
+LocalCachedMapOptions<Integer, Student> mapOptions = LocalCachedMapOptions.<Integer, Student>defaults()
+.syncStrategy(LocalCachedMapOptions.SyncStrategy.NONE)
+.reconnectionStrategy(LocalCachedMapOptions.ReconnectionStrategy.CLEAR);
+
+RLocalCachedMap<Integer, Student> studentsMap = RedissonConfig().getClient().getLocalCachedMap(
+		"students",
+		new TypedJsonJacksonCodec(Integer.class, Student.class),
+		mapOptions
+);
+Student student1 = new Student("sam", 10, "atlanta", List.of(1, 2, 3));
+studentsMap.put(1, student1);
+
+
+
+
 
 LocalCachedMap : Get the notification from redis when a key is expire:
-----------------------------------------------------
+-----------------------------------------------------------------------------------------
 config set notify-keyspace-events AKE 		-- need this command to get the expired events from Redis.
 https://redis.io/docs/manual/keyspace-notifications/
 
@@ -27,6 +83,7 @@ https://redis.io/docs/manual/keyspace-notifications/
 /* if any update happens in redis,
  * SyncStrategy.NONE - do not publish to any apps if any update happens in redis and the redis is have the updated data and apps not
  * SyncStrategy.INVALIDATE - removes the invalidate data in other instances and upon requesting, apps will get the new data
+						-	 Invalidate local cache entry across all LocalCachedMap instances on map entry change. Broadcasts map entry hash (16 bytes) to all instances.
  * SyncStrategy.UPDATE  - publish to all instance with latest data and get reflected in apps
  * 
  * ReconnectionStrategy.CLEAR - if the connection b/w app and redis is down for a while due to redis is down or any, 
@@ -38,7 +95,7 @@ https://redis.io/docs/manual/keyspace-notifications/
 
 
 /* UPDATE, NONE - app1 gets the data, app2 updates the data in redis, 
-* redis publish the latest data to apps  due to SyncStrategy is none
+* redis publish the latest data to apps  due to SyncStrategy is UPDATE
 * so app1 gets the latest data,  
 *
 */

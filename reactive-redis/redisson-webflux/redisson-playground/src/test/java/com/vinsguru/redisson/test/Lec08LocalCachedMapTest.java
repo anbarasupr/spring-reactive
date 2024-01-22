@@ -52,7 +52,7 @@ public class Lec08LocalCachedMapTest extends BaseTest {
     }
 
     /* UPDATE, NONE - app1 gets the data, app2 updates the data in redis, 
-     * redis publish the latest data to apps  due to SyncStrategy is none
+     * redis publish the latest data to apps  due to SyncStrategy is Update
      * so app1 gets the latest data,  
      *
     */
