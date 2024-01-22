@@ -57,7 +57,7 @@ public class Lec09ListQueueStackTest extends BaseTest {
     @Test
     public void queueTest(){
         RQueueReactive<Long> queue = this.client.getQueue("number-input", LongCodec.INSTANCE);
-        Mono<Void> queuePoll = queue.poll() // poll - polls from start position
+        Mono<Void> queuePoll = queue.poll() // poll - polls from start position since it is a queue
                 .repeat(3) // above poll executes one time and same repeats 3 more time so totally 4 times. polls - 1 2 3 4, remains 6 itmes
                 .doOnNext(System.out::println)
                 .then();
@@ -71,8 +71,8 @@ public class Lec09ListQueueStackTest extends BaseTest {
     @Test
     public void stackTest(){ // Deque for stack data structure - same "number-input" datastructure is used for both queue and stack 
         RDequeReactive<Long> deque = this.client.getDeque("number-input", LongCodec.INSTANCE);
-        Mono<Void> stackPoll = deque.pollLast() // pollLast - polls from last position
-                .repeat(3) // polls 10, 9 8 6. already 1, 2, 3, 4 are polled from above test case and now remaining is 2
+        Mono<Void> stackPoll = deque.pollLast() // pollLast - polls from last position since it is a stack
+                .repeat(3) // polls 10, 9 8 7. already 1, 2, 3, 4 are polled from above test case and now remaining is 2
                 .doOnNext(System.out::println)
                 .then();
         StepVerifier.create(stackPoll)

@@ -68,6 +68,54 @@ Student student1 = new Student("sam", 10, "atlanta", List.of(1, 2, 3));
 studentsMap.put(1, student1);
 
 
+RListReactive:
+--------------------
+RListReactive<Long> list = this.client.getList("number-input", LongCodec.INSTANCE) 
+
+
+RQueueReactive:
+--------------------
+RQueueReactive<Long> queue = this.client.getQueue("number-input", LongCodec.INSTANCE);
+Mono<Void> queuePoll = queue.poll() // poll - polls from start position since it is a queue
+		
+
+RDequeReactive:
+--------------------
+RDequeReactive<Long> deque = this.client.getDeque("number-input", LongCodec.INSTANCE);
+Mono<Void> stackPoll = deque.pollLast() // pollLast - polls from last position since it is a stack
+	
+
+	
+RBlockingDequeReactive<Long> msgQueue = this.client.getBlockingDeque("message-queue", LongCodec.INSTANCE);
+RHyperLogLogReactive<Long> counter = this.client.getHyperLogLog("user:visits", LongCodec.INSTANCE);
+RTopicReactive topic = this.client.getTopic("slack-room1", StringCodec.INSTANCE);
+
+
+RBatchReactive batch = this.client.createBatch(BatchOptions.defaults());
+RListReactive<Long> list = batch.getList("numbers-list", LongCodec.INSTANCE);
+RSetReactive<Long> set = batch.getSet("numbers-set", LongCodec.INSTANCE);
+for (long i = 0; i < 500_000; i++) {
+	list.add(i);
+	set.add(i);
+}
+StepVerifier.create(batch.execute().then()).verifyComplete();
+
+
+
+RTransactionReactive transaction = this.client.createTransaction(TransactionOptions.defaults());
+RBucketReactive<Long> user1Balance = transaction.getBucket("user:1:balance", LongCodec.INSTANCE);
+RBucketReactive<Long> user2Balance = transaction.getBucket("user:2:balance", LongCodec.INSTANCE);
+this.transfer(user1Balance, user2Balance, 50)
+	.thenReturn(0)
+	.map(i -> (5 / i)) // some error
+	.then(transaction.commit())
+	.doOnError(System.out::println)
+	.onErrorResume(ex -> transaction.rollback())
+	.subscribe();
+
+
+
+RScoredSortedSetReactive<String> sortedSet = this.client.getScoredSortedSet("student:score", StringCodec.INSTANCE);
 
 
 
@@ -127,22 +175,27 @@ https://redis.io/docs/manual/keyspace-notifications/
 */
 
 
-HyperLogLog:	
-------------
+HyperLogLog:	RHyperLogLogReactive
+------------------------------------
 
 Propabilitistic data structure - gives estimation close to actual result without storing the unique datasets
 
-In a heavy user loads, it is required to track unique products that user purchasing. in this case, Set can be used and grows large, the performance will not be good
+In a heavy user loads, it is required to track unique products that user purchasing. In this case, Set can be used and grows large, the performance will not be good
 Here HyperLogLog is suggested if it is ok to have a  estimation close to actual result without storing the unique datasets
-The HyperLogLog size would 12.5 kb and will not occupy more memory
+The HyperLogLog size would be 12.5 kb and will not occupy more memory
 
 
-Message Queue and Pub/Sub:
--------------------------
+HyperLogLog is a probabilistic data structure that is used to estimate the number of distinct elements in a multiset or a stream of data. 
+The basic idea is to count the number of distinct elements in large datasets
+
+
+
+Message Queue and Pub/Sub:	RBlockingDequeReactive
+--------------------------------------------------
 In Message Queue, there will  be a producer who keeps on adding messages into Queue. 
 We can have any number of consumers to process the messages.
 If there are no comsumers, messages will be waiting in the queue. 
-So whenever consumers come online, they can poll and start processing th messages.
+So whenever consumers come online, they can poll and start processing the messages.
 Also messages would be distributed among the consumers if consumers are many.
 
 Consider producer produced messages 1 to 10. Consumer one take item 1 and consumer 2 cannot take item 1 since it is taken by another consumer.
@@ -151,7 +204,7 @@ So no duplicate processing
 
 Pub/Sub - Like announcements.
 When the publisher publish the information, every subscriber can listen the information. But they have to be in online
-Example : slack, chat applications usesthis model
+Example : slack, chat applications uses this model
 
 Also LocalCachedMap uses  this model.
 

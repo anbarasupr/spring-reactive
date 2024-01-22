@@ -30,7 +30,7 @@ public class Lec15SortedSetTest extends BaseTest {
         sortedSet.entryRange(0, 1) // prints in ascending and asking 0 to 1 values only
                 .flatMapIterable(Function.identity()) // flux
                 .map(se -> se.getScore() + " : " + se.getValue())
-                .doOnNext(System.out::println)
+                .doOnNext(System.out::println) //printsthe lowest score values
                 .subscribe();
 
         sleep(1000);

@@ -14,8 +14,8 @@ public class PriorityQueue {
 
     public Mono<Void> add(UserOrder userOrder){
         return this.queue.add(
-        		userOrder.getCategory().ordinal(),
-                // getScore(userOrder.getCategory()),
+//        		userOrder.getCategory().ordinal(),
+                getScore(userOrder.getCategory()),
                 userOrder
         ).then();
     }

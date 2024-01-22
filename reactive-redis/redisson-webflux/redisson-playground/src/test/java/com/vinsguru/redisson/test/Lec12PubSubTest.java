@@ -6,6 +6,8 @@ import org.redisson.api.RTopicReactive;
 import org.redisson.api.listener.PatternMessageListener;
 import org.redisson.client.codec.StringCodec;
 
+import reactor.core.publisher.Mono;
+
 public class Lec12PubSubTest extends BaseTest {
 
     @Test
@@ -15,7 +17,7 @@ public class Lec12PubSubTest extends BaseTest {
                 .doOnError(System.out::println)
                 .doOnNext(System.out::println)
                 .subscribe();
-        sleep(600_000);
+        sleep(600_000); 
     }
 
     @Test
@@ -31,4 +33,11 @@ public class Lec12PubSubTest extends BaseTest {
     }
 
     // publish the messages using redis-cli with the command: publish slack-room "Welcome Team"
+    
+    @Test
+    public void producer(){
+        RTopicReactive topic = this.client.getTopic("slack-room1", StringCodec.INSTANCE);
+        topic.publish("Welcome Team").doOnNext(System.out::println).block();
+ 		topic.publish("Hope all well...").doOnNext(System.out::println).block();
+    }
 }
