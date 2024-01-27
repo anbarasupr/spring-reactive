@@ -23,6 +23,7 @@ public class ChatRoomService implements WebSocketHandler {
 
     @Override
     public Mono<Void> handle(WebSocketSession webSocketSession) {
+    	System.out.println("WebSocketSession handle: "+webSocketSession);
         String room = getChatRoomName(webSocketSession);
         RTopicReactive topic = this.client.getTopic(room, StringCodec.INSTANCE);
         RListReactive<String> list = this.client.getList("history:" + room, StringCodec.INSTANCE);
