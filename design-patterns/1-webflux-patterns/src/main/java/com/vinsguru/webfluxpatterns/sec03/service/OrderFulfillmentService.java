@@ -16,10 +16,13 @@ public class OrderFulfillmentService {
     private List<Orchestrator> orchestrators;
     
     public Mono<OrchestrationRequestContext> placeOrder(OrchestrationRequestContext ctx){
-        var list = orchestrators.stream()
-                                                                       .map(o -> o.create(ctx))
-                                                                       .collect(Collectors.toList());
-        return Mono.zip(list, a -> a[0])
+        var list = orchestrators.stream() // List<Mono<OrchestrationRequestContext>>
+	                   .map(o -> o.create(ctx)) // gives publishers to deduct payment, shipping & inventory
+	                   .collect(Collectors.toList());
+        return Mono.zip(list, a -> { 
+        			System.out.println("all zip response: "+a.length);
+	        		return a[0]; 
+        		}) // subscribes to all deduct publishers above and get the response
                 .cast(OrchestrationRequestContext.class)
                 .doOnNext(this::updateStatus);
     }

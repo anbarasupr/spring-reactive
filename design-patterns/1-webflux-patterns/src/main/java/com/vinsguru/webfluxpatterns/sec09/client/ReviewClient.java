@@ -10,6 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,6 +27,8 @@ public class ReviewClient {
 
     @RateLimiter(name = "review-service", fallbackMethod = "fallback")
     public Mono<List<Review>> getReviews(Integer id){
+        // Promotes product sales by providing realistic Positive Reviews for the given product id. You need to pay $ for every request. 
+        // Enable log by passing this property sec09.log.enabled=true to see the charges
         return this.client
                 .get()
                 .uri("{id}", id)
@@ -33,10 +36,19 @@ public class ReviewClient {
                 .onStatus(HttpStatusCode::is4xxClientError, response -> Mono.empty())
                 .bodyToFlux(Review.class)
                 .collectList();
+        		// .doOnNext(list->{/*put in cache*});
     }
 
     public Mono<List<Review>> fallback(Integer id, Throwable ex){
-        return Mono.just(Collections.emptyList());
+        // return Mono.just(Collections.emptyList());              
+        List<Review> list = new ArrayList<>();
+        Review defaultReview = new Review();
+        defaultReview.setId(0);
+        defaultReview.setUser("Default");
+        defaultReview.setComment("xxx");
+        list.add(defaultReview);        
+        return Mono.just(list);        
+        // return Mono.fromSupplier(()->{/*get from cache*/});
     }
 
 }

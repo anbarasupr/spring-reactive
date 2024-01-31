@@ -20,6 +20,7 @@ public class ReviewClient {
                                .build();
     }
 
+    // Product id 10, 20, 30, 40, 50 are not present in this service. Product Id 7 has some weird issues
     public Mono<List<Review>> getReviews(Integer id){
         return this.client
                 .get()

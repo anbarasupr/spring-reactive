@@ -1,0 +1,237 @@
+		Resilient Design Patterns:
+		----------------------------
+
+Resilient Patterns:
+	Timeout Pattern
+	Retry Pattern
+	Circuit Breaker Pattern
+	Rate Limiter Pattern
+	Bulkhead Pattern
+	
+	
+Resilient Patterns:
+______________________
+	
+	Servicea -><- Serviceb ->X<- ServiceC
+	How can a system can be a resilient, if it depends on another system which is not responding?
+	Serviceb depends on ServiceC which is not responding or it throws some 500 error.
+	
+	Instead of propagating errors, it should be able to return some default value or to give enough information to the client.
+	
+	
+	Treat the request as failed if the response was not received within the given timeout
+	
+	
+1) Timeout Pattern:
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  
+ 
+									review service
+	Browser	->	aggregator 	->
+									product service
+									
+	Consider aggregator has to respond withing a second which is the SLA for the service to respond.
+	Set the timeout for the external services and if it fails to respond withing the time, give some fallback value.
+	
+	
+	
+	
+2) Retry Pattern:
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	Recover from transient failures (intermittent failures)
+	It might increase the overall response time	
+		Do not forget to set the timeout
+	Do not retry for 4XX error (4XX is client side issue. the request is wrong. so dont retry)
+	
+
+
+3) Circuit Breaker Pattern:
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	EX: Protect the home appliances from the excess current using circuit breaker
+	
+	circuit breaker is a another library or service layer in a microservice.
+	Pass the request and get the response via circuit breaker. As long as the service gives response and circuit breaker works propoerly which means the request and response load on the 
+	circuit breaker is same or equal, it is good.
+	
+	If the service sends too many 500 errors, the circuit breaker has intelligence to break the remaining request to flow to the service to avoid 500 errors further and the 
+	circuit breaker gives some default value assuming the service is not in healthy state to give response.
+	
+	
+
+	
+							Breaker
+							 _
+							|
+	Client 		->			|		->		Service
+						   _|
+							
+	If the request are continously failing from the service for a period of time, the circuit breaker assumes the service isnot in healthy state and does not allow the request to the service further.
+	It also provide ssome default value to the client.
+	
+	
+							Breaker
+							 _
+							\ 		500 erros
+	Client 		->			 \			->		Service
+				<-		     _\
+			Default value			
+	
+	
+	
+Circuit Breaker Terms:
+	State					Descriptions
+	CLOSED					Dependent service is UP. Allrequest are sent
+							This is where the CB starts. If service is failing continuously, it will go to OPEN state else in CLOSED state which is good
+							
+	OPEN					Dependent service is DOWN. Requests are not sent
+							For a certain period, it will stay in OPEN state and provides the default response to clients until the service is behaving properly.
+							Once the waiting period is over, it will go to HALF OPEN state.
+							
+							
+	HALF OPEN				Dependent service is MIGHT BE UP? Only few requests are sent to check
+							It checks for the service is responding or not and allow only few request to check the healthy state ofthe service.
+							If the health isgood it will go to CLOSED state andstarts responding from service.
+							If the health is still not good, it will go to OPEN state and providesthe default response to the clients for the specified period of time and
+							this life cycle continues.
+							
+					
+	java -jar external-services-v2.jar --server.port=7070 --sec08.log.enabled=true
+	External Review service will become healthy for every 30 seconds and not healthy for next 30 seconds and vice versa
+	
+	
+	Spring Cloud Circuit Breakers:
+		Netflix Hystrix
+		Resilence 4J
+		Sentinel
+		Spring Retry
+		
+		
+TIME_BASED
+	For the last 1 min, how many request succeeded and failed
+	
+minimumNumberOfCalls:2 , failureRateThreshold: 50
+	Atleast for minimum of 2 calls, if the failure rate is 50%, then go to OPEN state.
+	
+waitDurationInOpenState: 10s
+	Time to state in open state and it gives the default value at the time period 
+
+permittedNumberOfCallsInHalfOpenState:2
+	After above wait duration, try to check the health of service for 2 calls, if  it is good GO TO CLOSED state else go to OPEN state
+
+recordExceptions:
+	Only for those exceptions given under here, the circuit breaker breaks the circuit and for other exceptions it will ignore.
+	
+	
+
+Config:
+------------	
+resilience4j.circuitbreaker:
+  instances:
+    review-service:
+      slidingWindowType: COUNT_BASED		//TIME_BASED, COUNT_BASED
+      slidingWindowSize: 4		// for the last 4 request, how many succeeded and failed
+      minimumNumberOfCalls: 2
+      failureRateThreshold: 50		// In  percentage
+      waitDurationInOpenState: 10s
+      permittedNumberOfCallsInHalfOpenState: 2
+      recordExceptions:
+        - org.springframework.web.reactive.function.client.WebClientResponseException
+        - java.util.concurrent.TimeoutException
+		
+		
+		
+Summary:
+	To allow the client service to operate normally when the upstream service is not healthy
+	You can use it along with Retry + Timeout Pattern
+	Resilence 4J:
+		Gives  Spring and reactive support
+		Ratelimiter, Bulkhead patterns etc.,
+		Config using yaml/Overriding via Bean
+
+
+4. Rate Limiter Pattern
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Server Side Limiter:
+	To limit the number of requests being served by a server node 
+		EX; A image processing server node which does a lot of CPU intesive tasks and has a SLA to serve only 5 request at a time to avoid overloading
+	To protect system resources from overload
+	Very Important for CPU intensive tasks
+	
+Client Side	Limiter:
+	To limit the number of requests by client to the server (Limit the number of Upstream calls at the client level)
+		Ex; news message api consuming from different third party services to avoid paying lot of money to the third party and the client has a SLA of 1 request per 5 second 
+		to reduce the service usage cost where the client is receiving a lot of requests from news consumers with some 1000 request per second
+	To reduce the service usage cost / respect the contract
+	
+	
+
+
+Config:
+-------------
+resilience4j.ratelimiter:
+  instances:
+    calculator-service:
+      limitRefreshPeriod: 20s	// window time
+      limitForPeriod: 5			// no of calls for the window time which is  20s here
+      timeoutDuration: 5s		// wait time to check that it can be processed in next bucket or window
+    review-service:
+      limitRefreshPeriod: 20s
+      limitForPeriod: 3
+      timeoutDuration: 0s
+	  
+	  
+	calculator-service: server can process 5 request in 20s window as per above ratelimitter timeout config
+	-------------------
+	
+	Req1-------->4s  (Pass) Request received on 4th Sec
+	Req2------------->6s	(Pass) Request received on 6th Sec
+	Req3----------------->8s	(Pass) Request received on 8th Sec
+	Req4----------->5s	(Pass) Request received on 5th Sec
+	Req5-------------------->9s 	(Pass) Request received on 9th Sec
+	
+	Req6----------------------->10s (Rejected)	Request received on 10th Sec
+	
+	Req7----------------------------------->14s (Rejected) Willing to wait for 5 more seconds but 15+4=19s but it falls again in Bucket1 and it is rejected 
+	
+	Req8--------------------------------------------->17s--------------> (Rejected) Willing to wait for more seconds 17+5=22s so that it falls under Bucket2 and process it 
+	  
+	  
+	0S----------------------Bucket1--------------------------------20s-----------------------Bucket2-------------------------------40s
+							5 request per 20s												5 request per 20s
+
+
+	There is difference in configuring the service side and client rate limiters. The difference is where they are using.
+	If you want to limit the upstream calls from client side, use the annotations at the rest template api placeholder where you making the third aprty calls
+	If you want to limt at the server node, add the annotations at you rest endpoints where it is actually serving the response
+	
+	
+Forum to check product reviews:
+	https://www.consumerreports.org/
+
+
+
+
+5. Bulkhead Pattern
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------	
+	There could be some apis which does CPU intensive tasks. 
+	identify those apis and allocate separate resources so that it is not going to impact other API resources.
+	
+	Ratelimiter:
+	Number of requests per time window
+	Reject other calls
+	
+	
+	Bulkhead:
+		Number of concurrent calls
+		Queue other calls
+	
+
+	
+	
+Flux.Zip:
+---------
+Merge given monos into a new Mono that will be fulfilled when all of the given Monoshave produced an item, aggregating their values into a Tuple3.
+An error or empty completion of any source will cause other sourcesto be cancelled and the resulting Mono to immediately error or complete, respectively.
+	
+	
+	

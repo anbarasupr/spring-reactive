@@ -21,8 +21,8 @@ public class OrchestratorService {
     public Mono<OrderResponse> placeOrder(Mono<OrderRequest> mono){
         return mono
                 .map(OrchestrationRequestContext::new)
-                .flatMap(fulfillmentService::placeOrder)
-                .doOnNext(this::doOrderPostProcessing)
+                .flatMap(fulfillmentService::placeOrder)	// call product, payment and shipping
+                .doOnNext(this::doOrderPostProcessing)	// if status failed, do cancellation
                 .doOnNext(DebugUtil::print) // just for debugging
                 .map(this::toOrderResponse);
     }

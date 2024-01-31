@@ -30,6 +30,7 @@ public class InventoryClient {
     }
 
     private Mono<InventoryResponse> callInventoryService(String endPoint, InventoryRequest request){
+    	System.out.println("callInventoryService endPoint: "+endPoint);
         return this.client
                 .post()
                 .uri(endPoint)

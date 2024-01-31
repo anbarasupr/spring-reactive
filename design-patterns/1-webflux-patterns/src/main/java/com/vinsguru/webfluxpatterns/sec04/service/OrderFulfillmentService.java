@@ -25,16 +25,16 @@ public class OrderFulfillmentService {
     private ShippingOrchestrator shippingOrchestrator;
 
     public Mono<OrchestrationRequestContext> placeOrder(OrchestrationRequestContext ctx){
-        return this.getProduct(ctx)
+        return this.getProduct(ctx)	// product service
                 .doOnNext(OrchestrationUtil::buildPaymentRequest)
-                .flatMap(this.paymentOrchestrator::create)
+                .flatMap(this.paymentOrchestrator::create) // payment service
                 .doOnNext(OrchestrationUtil::buildInventoryRequest)
-                .flatMap(this.inventoryOrchestrator::create)
+                .flatMap(this.inventoryOrchestrator::create)	// inventory service
                 .doOnNext(OrchestrationUtil::buildShippingRequest)
-                .flatMap(this.shippingOrchestrator::create)
+                .flatMap(this.shippingOrchestrator::create)		// shipping service
                 .doOnNext(c -> c.setStatus(Status.SUCCESS))
                 .doOnError(ex -> ctx.setStatus(Status.FAILED))
-                .onErrorReturn(ctx);
+                .onErrorReturn(ctx); //if error in above services, just return the context
     }
 
     private Mono<OrchestrationRequestContext> getProduct(OrchestrationRequestContext ctx){

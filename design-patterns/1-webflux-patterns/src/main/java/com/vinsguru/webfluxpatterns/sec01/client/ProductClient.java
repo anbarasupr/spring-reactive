@@ -17,6 +17,7 @@ public class ProductClient {
                                .build();
     }
 
+    //Provides the product details for the given product id (up to 50)
     public Mono<ProductResponse> getProduct(Integer id){
         return this.client
                 .get()

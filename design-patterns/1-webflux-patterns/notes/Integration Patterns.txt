@@ -1,5 +1,5 @@
 		Design Patterns:
-		---------------
+		----------------------------
 
 Integration Patterns:
 	Gateway Aggregator Pattern
@@ -13,13 +13,15 @@ Resilient Patterns:
 	Timeout Pattern
 	Retry Pattern
 	Circuit Breaker Pattern
-	Rate Liimiter Pattern
+	Rate Limiter Pattern
 	Bulkhead Pattern
 	
 	
-	
+Integration Patterns:
+_____________________
+
 1) Gateway Aggregator Pattern:
------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	A separate microservice whose job is receive the request from the client and calls all the upstream services, collect the information and send it back to the client.
 	
 	It hides all the backend complexities and acts as proxy for facade
@@ -44,6 +46,7 @@ Resilient Patterns:
 		
 		
 	java -jar external-services-v2.jar --server.port=7070
+	java -jar external-services-v2.jar --server.port=7070 --sec08.log.enabled=true
 	java -jar external-services-v2.jar --server.port=7070 --sec01.delay.response=3000 -> to delay the response - to create 3s latency
 	http://localhost:7070/swagger-ui/
 
@@ -56,13 +59,13 @@ Resilient Patterns:
 					
 						promotions service
 	
-	If product service is core service, even review and promotions are down, we can still provide response with produc information.
+	If product service is core service, even review and promotions are down, we can still provide response with product information.
 	But if product is down, it will not help the user.
 	
 	
 	
 2) Scatter Gather Pattern
------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	It is also an aggregator pattern for specific use case.
 	Broadcasts the message to all the recipients and then collects the response
 	
@@ -70,10 +73,10 @@ Resilient Patterns:
 	
 3) Orchestrator Pattern (Parallel Workflow)
 -----------------------------------------
-	Aggregator + additional business logic
+	Aggregator + additional business logic to provide a workflow
 	
 	
-	In order to place an order successfully, the order service recieve an order request form client, the order service sneds to requests to different srevices like
+	In order to place an order successfully, the order service recieve an order request form client, the order service sends requests to different srevices like
 	
 	product service - to check the product to be present
 	payment service - to check the user is having enough balance
@@ -108,6 +111,100 @@ Service Orchestrator:
 	-----------------------------------------------------------------------------------------------------------------------------------------------------------------
 	Success					Success					Success						Failed						Failed					refund user, restore shipping
 	-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+	
+	
+
+4) Orchestrator Pattern (Chained / Sequential Workflow)
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Chained Pattern:
+	There is no special aggregator
+	Any service can assume the role of aggregation
+
+	Pros:
+		Easy to implement
+		
+	Cons:
+		Increased latency
+		Very difficult to debug
+		Very difficult to maintain/implement change in requirements
+		
+		
+	Chained Pattern EX:
+		Service-a		->		Service-b		->		Service-c		->		Service-d
+		
+
+
+
+* Orchestrator to provide a chained workflow.
+-------------------------------------------------
+									Service-a
+												Service-a1
+									Service-b
+	Orchestrator		->			
+									Service-c
+												Service-c1
+									Service-d
+
+	
+	Pros:
+		Easy to debug
+		Easy to maintain/implement change in requirement (Improves in terms of debugging)
+		
+	Cons:
+		Increased latency (Latency is still there)
+		
+	
+
+	
+Sequential order workflow example:
+------------------------------------------
+To implement the seqquential orchestrator pattern for the below seqquential order workflow.
+
+	
+							product
+							
+							payment	
+	orchestrator 	->		
+							inventory
+							
+							shipping
+							
+	To detect the payment for payment service, it requires the product price. 
+	Once the product price is received, the payment service deducts the product price. Once it is deducted, the payment service provide a confirmation id (payment id)
+	which is required for inventory service to deduct the inventory and provide a confirmation id which is inventory id.
+	Once inventory is deducted, shipping service schedule the shipping item with the shipping id.
+	
+	If payment passed, but inventory failed, so refund the payment.
+	If shipping failed, then refund the payment and restore the inventory as well.
+	
+	
+	
+	
+	
+Splitter Pattern:
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	Consider amazon application, we can buy electronics, ebooks and various accessories.
+	Certain items require shipping, some require additional warranty, tags, etc.
+	
+	One single order contains multiple items and depends on the item, processing may vary. 
+	This is where splitter can be applied.
+	
+	This is quite opposite to scatter and gather pattern. here we have merged items which can be scattered or processed differently
+	
+	
+																					->	RedBall, RedBall2, RedBall3
+	RedBall, GreenBall, OrangeBall, RedBall2, RedBall3, GreenBall1, GreenBall2 		->	GreenBall, GreenBall1, GreenBall2
+																					-> 	OrangeBall
+																					
+	Depends on the items, the respective upstream service is  called to process it.
+	
+	
+
+	
+Flux.Zip:
+---------
+Merge given monos into a new Mono that will be fulfilled when all of the given Monoshave produced an item, aggregating their values into a Tuple3.
+An error or empty completion of any source will cause other sourcesto be cancelled and the resulting Mono to immediately error or complete, respectively.
 	
 	
 	

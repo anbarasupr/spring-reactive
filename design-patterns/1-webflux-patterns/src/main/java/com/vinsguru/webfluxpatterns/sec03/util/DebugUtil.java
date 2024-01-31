@@ -10,6 +10,7 @@ public class DebugUtil {
         ObjectMapper mapper = new ObjectMapper();
         try {
             System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(ctx));
+            // System.out.println(mapper.writeValueAsString(ctx));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }

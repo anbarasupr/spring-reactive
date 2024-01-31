@@ -31,10 +31,15 @@ public class PaymentOrchestrator extends Orchestrator{
     @Override
     public Consumer<OrchestrationRequestContext> cancel() {
         return ctx -> Mono.just(ctx)
-                .filter(isSuccess())
+        		.doOnNext(cx->System.out.println("payment cancel required: "+isSuccess().test(ctx)))
+                .filter(isSuccess()) // if success, revert then
                 .map(OrchestrationRequestContext::getPaymentRequest)
                 .flatMap(this.client::refund)
-                .subscribe();
+                // .subscribe()
+		        .subscribe(
+		        		res->System.out.println("Payment Cancel Completed : "+res),
+		        		err->System.out.println("Payment Cancel Failed : "+err)
+				);
     }
 
 }

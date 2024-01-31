@@ -20,6 +20,7 @@ public class ProductClient {
     }
 
     public Mono<Product> getProduct(Integer id){
+    	// Provides the product details for the given product id
         return this.client
                 .get()
                 .uri("{id}", id)

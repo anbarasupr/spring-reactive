@@ -23,10 +23,10 @@ public class OrchestratorService {
     public Mono<OrderResponse> placeOrder(Mono<OrderRequest> mono){
         return mono
                 .map(OrchestrationRequestContext::new)
-                .flatMap(this::getProduct)
-                .doOnNext(OrchestrationUtil::buildRequestContext)
-                .flatMap(fulfillmentService::placeOrder)
-                .doOnNext(this::doOrderPostProcessing)
+                .flatMap(this::getProduct) // get product price
+                .doOnNext(OrchestrationUtil::buildRequestContext) //generate the payment, inventory and shipping request with a new order id
+                .flatMap(fulfillmentService::placeOrder) // call payment and shipping
+                .doOnNext(this::doOrderPostProcessing) // if status failed, do cancellation
                 .doOnNext(DebugUtil::print) // just for debugging
                 .map(this::toOrderResponse);
     }
@@ -35,7 +35,8 @@ public class OrchestratorService {
         return this.productClient.getProduct(ctx.getOrderRequest().getProductId())
                 .map(Product::getPrice)
                 .doOnNext(ctx::setProductPrice)
-                .map(i -> ctx);
+                .map(i -> ctx); // if no product found, return empty here, map wont execute here if no product response
+        		// .thenReturn(ctx); // if no product found, return context here irrespective of product response. product response is empty in the context here
     }
 
     private void doOrderPostProcessing(OrchestrationRequestContext ctx){

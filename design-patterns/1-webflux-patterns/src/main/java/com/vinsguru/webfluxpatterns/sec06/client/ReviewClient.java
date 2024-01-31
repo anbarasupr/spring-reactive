@@ -22,13 +22,15 @@ public class ReviewClient {
     }
 
     public Mono<List<Review>> getReviews(Integer id){
+    	// Provides the list of Review for the given product id. Reviews will take upto 2500 milliseconds
         return this.client
                 .get()
                 .uri("{id}", id)
                 .retrieve()
                 .bodyToFlux(Review.class)
                 .collectList()
-                .timeout(Duration.ofMillis(500))
+                .timeout(Duration.ofMillis(500)) // timeout pattern - return empty
+                // .timeout(Duration.ofMillis(500), Mono.empty()) // give some fallback publisher to emit default values if timeout happens
                 .onErrorReturn(Collections.emptyList());
     }
 

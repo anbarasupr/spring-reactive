@@ -20,12 +20,14 @@ public class ProductClient {
     }
 
     public Mono<Product> getProduct(Integer id){
+    	// Provides the product details for the given product id
         return this.client
                 .get()
                 .uri("{id}", id)
                 .retrieve()
                 .bodyToMono(Product.class)
-                .timeout(Duration.ofMillis(500))
+                .timeout(Duration.ofMillis(500))	// timeout pattern - return empty
+                // .timeout(Duration.ofMillis(500), Mono.empty()) // give some fallback publisher to emit default values if timeout happens
                 .onErrorResume(ex -> Mono.empty());
     }
 

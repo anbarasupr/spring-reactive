@@ -31,9 +31,14 @@ public class InventoryOrchestrator extends Orchestrator{
     @Override
     public Consumer<OrchestrationRequestContext> cancel() {
         return ctx -> Mono.just(ctx)
-                .filter(isSuccess())
+        		.doOnNext(cx->System.out.println("inventory cancel required: "+isSuccess().test(ctx)))
+                .filter(isSuccess()) // if success, revert then
                 .map(OrchestrationRequestContext::getInventoryRequest)
                 .flatMap(this.client::restore)
-                .subscribe();
+                // .subscribe();
+		        .subscribe(
+		        		res->System.out.println("Inventory Cancel Completed : "+res),
+		        		err->System.out.println("Inventory Cancel Failed : "+err)
+				);
     }
 }

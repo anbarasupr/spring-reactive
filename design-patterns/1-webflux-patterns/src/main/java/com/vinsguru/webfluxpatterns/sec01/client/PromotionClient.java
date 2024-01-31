@@ -20,6 +20,7 @@ public class PromotionClient {
                                .build();
     }
 
+    // Product id 5, 10, 15, 20, 25, 30, 35, 40, 45, 50 are not present in this service
     public Mono<PromotionResponse> getPromotion(Integer id){
         return this.client
                 .get()

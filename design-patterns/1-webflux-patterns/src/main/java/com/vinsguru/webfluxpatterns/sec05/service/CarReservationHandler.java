@@ -19,8 +19,8 @@ public class CarReservationHandler extends ReservationHandler{
 
     @Override
     protected Flux<ReservationItemResponse> reserve(Flux<ReservationItemRequest> flux) {
-        return flux.map(this::toCarRequest)
-                .transform(this.client::reserve)
+        return flux.map(this::toCarRequest) //map is for converting one type to another type object
+                .transform(this.client::reserve)// transform is for converting one flux type to another flux type. Flux<CarReservationRequest> to Flux<CarReservationResponse>
                 .map(this::toResponse);
     }
 

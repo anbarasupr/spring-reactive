@@ -23,7 +23,8 @@ public class OrderCancellationService {
     public void  init(){
         this.sink = Sinks.many().multicast().onBackpressureBuffer();
         this.flux = this.sink.asFlux().publishOn(Schedulers.boundedElastic());
-        orchestrators.forEach(o -> this.flux.subscribe(o.cancel()));
+        orchestrators.forEach(o -> this.flux.doOnNext(ctx->System.out.println("Request received for cancellation process..."))
+        		.subscribe(o.cancel())); //subscribe to the sink and cancel the payment, inventory and shipping
     }
 
     public void cancelOrder(OrchestrationRequestContext ctx){

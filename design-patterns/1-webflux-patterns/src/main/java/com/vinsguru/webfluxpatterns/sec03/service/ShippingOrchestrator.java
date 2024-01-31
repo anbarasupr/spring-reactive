@@ -31,9 +31,14 @@ public class ShippingOrchestrator extends Orchestrator{
     @Override
     public Consumer<OrchestrationRequestContext> cancel() {
         return ctx -> Mono.just(ctx)
-                .filter(isSuccess())
+        		.doOnNext(cx->System.out.println("shipping cancel required: "+isSuccess().test(ctx)))
+                .filter(isSuccess()) // if success, revert then
                 .map(OrchestrationRequestContext::getShippingRequest)
                 .flatMap(this.client::cancel)
-                .subscribe();
+                // .subscribe()
+                .subscribe(
+                		res->System.out.println("Shipping Cancel Completed : "+res),
+                		err->System.out.println("Shipping Cancel Failed : "+err)
+        		);
     }
 }

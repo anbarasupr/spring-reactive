@@ -21,6 +21,7 @@ public class FrontierClient {
                                .build();
     }
 
+    // POST only. No validation on from / to. Occasional error
     public Flux<FlightResult> getFlights(String from, String to){
         return this.client
                 .post()

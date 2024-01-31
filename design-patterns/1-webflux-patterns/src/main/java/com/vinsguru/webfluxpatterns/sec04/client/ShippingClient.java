@@ -30,6 +30,7 @@ public class ShippingClient {
     }
 
     private Mono<ShippingResponse> callShippingService(String endPoint, ShippingRequest request){
+    	System.out.println("callShippingService endPoint: "+endPoint);
         return this.client
                 .post()
                 .uri(endPoint)

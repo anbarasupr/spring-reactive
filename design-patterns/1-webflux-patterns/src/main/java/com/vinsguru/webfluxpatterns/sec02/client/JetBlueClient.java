@@ -19,6 +19,7 @@ public class JetBlueClient {
                                .build();
     }
 
+    // No validation on from / to. Occasional erro
     public Flux<FlightResult> getFlights(String from, String to){
         return this.client
                 .get()

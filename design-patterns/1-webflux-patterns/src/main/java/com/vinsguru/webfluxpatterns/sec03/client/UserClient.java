@@ -30,6 +30,7 @@ public class UserClient { // PaymentClient
     }
 
     private Mono<PaymentResponse> callUserService(String endPoint, PaymentRequest request){
+    	System.out.println("callPaymentService endPoint: "+endPoint);
         return this.client
                 .post()
                 .uri(endPoint)

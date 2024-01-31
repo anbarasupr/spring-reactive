@@ -25,6 +25,11 @@ public class ProductAggregatorService {
     public Mono<ProductAggregate> aggregate(Integer id){
     	/* Zip - Either all or nothing. All publisher has to emit items or nothing.
     	 * Even if one publisher emits empty signal, Mono.zip  will emit empty signal
+    	 * 
+    	 * Merge given monos into a new Mono that will be fulfilled when all of the given Monos have produced an item, 
+    	 * aggregating their values into a Tuple3.
+	 	 * An error or empty completion of any source will cause other sources to be cancelled 
+	 	 * and the resulting Mono to immediately error or complete, respectively.
     	 */
         return Mono.zip(
                this.productClient.getProduct(id),

@@ -17,7 +17,8 @@ public class DeltaClient {
                                .baseUrl(baseUrl)
                                .build();
     }
-
+    
+    // No validation on from / to. Occasional error
     public Flux<FlightResult> getFlights(String from, String to){
         return this.client
                 .get()

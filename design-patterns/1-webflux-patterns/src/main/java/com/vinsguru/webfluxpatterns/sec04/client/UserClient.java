@@ -9,7 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @Service
-public class UserClient {
+public class UserClient { //Payment
 
     private static final String DEDUCT = "deduct";
     private static final String REFUND = "refund";
@@ -30,6 +30,7 @@ public class UserClient {
     }
 
     private Mono<PaymentResponse> callUserService(String endPoint, PaymentRequest request){
+    	System.out.println("callUserService endPoint: "+endPoint);
         return this.client
                 .post()
                 .uri(endPoint)
