@@ -18,7 +18,7 @@ public class WeatherService {
         return 0;
     }
 
-   @Scheduled(fixedRate = 10_000)
+//   @Scheduled(fixedRate = 10_000)
     public void update(){
         System.out.println("updating weather");
         IntStream.rangeClosed(1, 5)
