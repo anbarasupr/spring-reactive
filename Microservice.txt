@@ -1,0 +1,56 @@
+Microservices - Backend Communication
+
+
+Technology			Features						Reqeust and Response		Stream based communnication
+[-----------------------------------------------------------------------------------------------------------]
+Spring Web			Sync /Rest						Yes							No
+
+Spring WebFlux		Reactive /Rest					Yes							Yes
+	
+gRPC				Sync / Low Latency /			Yes							Yes
+					Bi-Directional streaming
+					
+
+rSocket				Reactive / Low Latency /		Yes							Yes
+					Bi-Directional streaming
+					
+Kafka				Event Driven Async
+					
+					
+					
+Microservices - Fontend Communication
+[-----------------------------------------------------------------------------------------------------------]
+	GraphQL has good features than Rest.
+	rSocket and gRPC also good in Mobile applications which is light weight
+
+Microservices - Caching
+[-----------------------------------------------------------------------------------------------------------]
+	Redis - Highperformance caching layer which increase the through put of applications	
+ 
+ 
+Resiliency:
+[-----------------------------------------------------------------------------------------------------------]
+	Several Design Resilient Design pattern
+	
+	
+Regression Testing:
+[-----------------------------------------------------------------------------------------------------------]
+	Selenium and Jenkins
+	
+Deployment and orchestration:
+[-----------------------------------------------------------------------------------------------------------]
+Docker:
+	Increase the productivity by quickly spinning up the dependent applications like database and others
+	Easy to package applications and share
+	
+		packaging the applications with all the dependencies
+		Consistent development and deployment
+	
+Kubernetes:
+	It is for Orchestration
+		Application Depoyment
+		Load balancing
+		Service Discovery
+		Auto Scaling
+		Config Management
+		Avoid vendor lock-in / multi Cloud support like AWS, GCP, Azure

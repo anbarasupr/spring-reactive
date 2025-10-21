@@ -30,6 +30,7 @@ public class ChatRoomService implements WebSocketHandler {
         // subscribe
         webSocketSession.receive()
                 .map(WebSocketMessage::getPayloadAsText)
+                .doOnNext(s -> System.out.println("sender message " + s+", room: "+room))
                 .flatMap(msg -> list.add(msg).then(topic.publish(msg)))
                 .doOnError(System.out::println)
                 .doFinally(s -> System.out.println("Subscriber finally " + s))
@@ -37,7 +38,8 @@ public class ChatRoomService implements WebSocketHandler {
 
         // publisher
         Flux<WebSocketMessage> flux = topic.getMessages(String.class)
-                .startWith(list.iterator())
+                .doOnNext(s -> System.out.println("topic textMessage " + s+", room: "+room))
+                .startWith(list.iterator().doOnNext(s -> System.out.println("topic startWith ::::: " + s+", room: "+room))) // for new joinees, it get the whole history and send to them at very first time when user subscribed
                 .map(webSocketSession::textMessage)
                 .doOnError(System.out::println)
                 .doFinally(s -> System.out.println("publisher finally " + s));
